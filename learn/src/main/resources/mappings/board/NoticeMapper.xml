@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="noticeDAO">
+
+	<!-- 전체 리스트 -->
+	<select id="getNoticeList" parameterType="noticeVO" resultType="noticeVO">
+		SELECT * FROM NOTICE_BOARD ORDER BY BOARD_NO DESC
+	</select>
+	
+	<!-- 게시글 번호에 해당하는 상세데이터 -->
+	<select id="getNotice" parameterType="noticeVO" resultType="noticeVO">
+		SELECT * FROM NOTICE_BOARD 
+		WHERE BOARD_NO = #{boardNo} 
+	</select>
+	
+	<!-- 페이징추가  -->
+	<select id="getBoardList" parameterType="map" resultType="noticeVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM NOTICE_BOARD
+		                WHERE 1 = 1
+		               <if test="searchKeyword != null">
+						AND ( BOARD_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+						OR BOARD_CONTENT LIKE '%'|| #{searchKeyword} ||'%')		
+						</if>		
+	                 	ORDER BY BOARD_NO DESC
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countBoard" parameterType="noticeVO" resultType="int">
+		SELECT COUNT(BOARD_NO) FROM NOTICE_BOARD
+		<if test="searchKeyword != null">
+		WHERE BOARD_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+		OR BOARD_CONTENT LIKE '%'|| #{searchKeyword} ||'%'		
+		</if>		
+	</select>
+	
+	<delete id="deleteNotice" parameterType="noticeVO">
+		DELETE FROM NOTICE_BOARD WHERE BOARD_NO = #{boardNo}
+	</delete>
+	
+	<insert id="insertNotice" parameterType="noticeVO">
+		INSERT INTO NOTICE_BOARD (BOARD_NO, USER_ID, GRADE, BOARD_TITLE, BOARD_CONTENT, BOARD_REGDATE)
+	 	VALUES ((SELECT NVL(MAX(BOARD_NO),0) + 1 FROM NOTICE_BOARD), #{userId}, #{grade}, #{boardTitle},#{boardContent}, SYSDATE)
+	</insert>
+	
+	<update id="updateNotice" parameterType="noticeVO">
+		UPDATE NOTICE_BOARD 
+		SET BOARD_TITLE = #{boardTitle}, 
+			BOARD_CONTENT = #{boardContent}
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+	
+	<select id="lastNo" resultType="int">
+		SELECT NVL(MAX(BOARD_NO),0) FROM NOTICE_BOARD
+	</select>
+	
+	<select id="latestInfo" resultType="noticeVO">
+        SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM NOTICE_BOARD
+	                 	ORDER BY BOARD_NO DESC
+	             ) B 
+	         )
+            WHERE R_NUM BETWEEN 1 AND 5
+	</select>
+	
+</mapper>
+
+
+
+
+
+

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userDAO">
+
+	<select id="getUser" parameterType="userVO"
+		resultType="userVO">
+		SELECT * FROM USERS WHERE USER_ID = #{userId} AND USER_PWD = #{userPwd}
+	</select>
+	
+	<select id="getUserList" parameterType="userVO" resultType="userVO">
+		SELECT * FROM USERS WHERE GRADE != '관리자'
+	</select>
+	
+	<select id="getUserId" parameterType="userVO" resultType="int">
+		SELECT count(*) FROM USERS WHERE USER_ID = #{userId}
+	</select>
+	
+	<select id="insertUser" parameterType="userVO">
+		INSERT INTO USERS VALUES(#{userId}, '일반회원', #{userName}, #{userBirth}, #{userPwd}, SYSDATE,0, #{socialType})
+	</select>
+	
+	<select id="modifyUser" parameterType="userVO" resultType="int">
+		UPDATE USERS SET USER_PWD = #{userPwd}, USER_NAME = #{userName} WHERE USER_ID = #{userId}
+	</select>
+	
+	<select id="findUserIdList" parameterType="userVO"
+		resultType="userVO">
+		SELECT * FROM USERS
+		WHERE USER_NAME = #{userName} AND USER_BIRTH = #{userBirth}
+		AND GRADE != '관리자'
+	</select>
+
+
+	<select id="findUserId" parameterType="userVO"
+		resultType="userVO">
+		SELECT * FROM USERS
+		WHERE USER_ID = #{userId}
+		AND GRADE != '관리자'
+	</select>
+
+	<update id="changePwd" parameterType="userVO">
+		UPDATE USERS
+		SET USER_PWD = #{userPwd}
+		WHERE USER_ID = #{userId}
+	</update>
+	
+	<update id="deleteUser" parameterType="userVO">
+		UPDATE USERS
+		SET
+		GRADE = '탈퇴', 
+		USER_PWD = NULL, 
+		USER_BIRTH = NULL,
+		USER_REGDATE = NULL, 
+		POINTS = NULL,
+		SOCIAL_TYPE = NULL
+		WHERE USER_ID = #{userId}
+	</update>
+
+
+	<select id="confirmUser" parameterType="userVO" resultType="userVO">
+		SELECT * FROM USERS WHERE USER_ID = #{userId}
+	</select>
+
+	<update id="addNaverUser" parameterType="userVO">
+		UPDATE USERS SET SOCIAL_TYPE = 'naver' WHERE USER_ID = #{userId}
+	</update>
+	
+	<select id="getLikeList" parameterType="likeVO" resultType="likeVO">
+		select * from like_view	where user_id = #{userId}
+	</select>
+	
+	<select id="getReviewCnt" parameterType="likeVO" resultType="int">
+		select count(*) as review_cnt FROM lecture_review where lecture_no = #{lectureNo}
+	</select>
+	
+	<select id="getReviewRate" parameterType="likeVO" resultType="int">
+		select nvl(sum(board_rate), 0) as review_rate from lecture_review where lecture_no = #{lectureNo}
+	</select>
+	
+	<select id="getOrderCh" parameterType="likeVO" resultType="int">
+		select count(*) as order_ch from order_detail where lecture_no = #{lectureNo} and user_id = #{userId}
+		order by lecture_no
+	</select>
+	
+	<insert id="insertLike" parameterType="likeVO">
+		INSERT INTO lecture_like VALUES (
+		nvl((SELECT max(like_no)from lecture_like), 1)+1, #{lectureNo}, #{userId})
+	</insert>
+	
+	<delete id="deleteLike" parameterType="likeVO">
+		DELETE from lecture_like where lecture_no = #{lectureNo} and user_id = #{userId}
+	</delete>
+	
+	<select id="getSearchLikeList" parameterType="likeVO" resultType="likeVO">
+		select * from like_view	where user_id = #{userId}
+		order by ${searchOrder}
+	</select>
+	
+	<select id="getSearchPaidLikeList" parameterType="likeVO" resultType="likeVO">
+		select * from like_view	where user_id = #{userId} and lecture_price > 0
+		order by ${searchOrder}
+	</select>
+	
+	<select id="getSearchFreeLikeList" parameterType="likeVO" resultType="likeVO">
+		select * from like_view	where user_id = #{userId} and lecture_price = 0
+		order by ${searchOrder}
+	</select>
+	
+	<select id="getReviewAverage" parameterType="likeVO" resultType="double">
+		select nvl(avg(board_rate), 0) from lecture_review where lecture_no = #{lectureNo}
+	</select>
+	
+	<!-- 강의자 신청 승인을 위한 기능  -->
+	<update id="updateUserLecture" parameterType="userVO">
+		UPDATE USERS 
+		SET GRADE = '강의자' 
+		WHERE USER_ID = #{userId}
+	</update>
+	
+	<update id="updateUserIntro" parameterType="userVO">
+		UPDATE USERS
+		SET USER_INTRO = #{userIntro}
+		WHERE USER_ID = #{userId}
+	</update>
+	
+	<select id="getPointLogCount" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM POINT_LOG WHERE USER_ID = #{userId}
+	</select>
+
+	<select id="getPointLogList" parameterType="hashMap" resultType="pointlog">
+		SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM
+		(SELECT * FROM POINT_LOG WHERE USER_ID = #{userId}
+		ORDER BY POINT_DATE DESC) K
+		) WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>	
+	
+	<select id="getLectureTeacherId" parameterType="likeVO" resultType="likeVO">
+		select * from lecture where lecture_no = #{lectureNo}
+	</select>
+	
+</mapper>
+
+
+
+
+
+

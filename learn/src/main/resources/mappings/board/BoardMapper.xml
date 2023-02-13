@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.board.impl.BoardDAO">
+
+
+	<insert id="insertQnaBoard" parameterType="board">
+		INSERT INTO QUESTION_BOARD
+		 (QBOARD_NO,LECTURE_NO,USER_ID,GRADE,CATEGORY_NAME,BOARD_TITLE,BOARD_CONTENT,BOARD_FILE)
+		VALUES ((SELECT NVL(MAX(QBOARD_NO),0) + 1 FROM QUESTION_BOARD), #{lectureNo},
+		 #{userId}, #{grade}, #{categoryName}, #{boardTitle}, #{boardContent}, #{boardFile})
+	</insert>
+	
+	<insert id="insertFreeBoard" parameterType="board">
+		INSERT INTO FREE_BOARD
+		 (FBOARD_NO,USER_ID,GRADE,BOARD_TITLE,BOARD_CONTENT,BOARD_FILE)
+		VALUES ((SELECT NVL(MAX(FBOARD_NO),0) + 1 FROM FREE_BOARD),
+		 #{userId}, #{grade}, #{boardTitle}, #{boardContent}, #{boardFile})
+	</insert>
+	
+	<insert id="insertBoard" parameterType="board">
+		<if test="qboardNo != null">
+		INSERT INTO QUESTION_BOARD
+		 (QBOARD_NO,LECTURE_NO,USER_ID,GRADE,CATEGORY_NAME,BOARD_TITLE,BOARD_CONTENT,BOARD_FILE)
+		VALUES ((SELECT NVL(MAX(QBOARD_NO),0) + 1 FROM QUESTION_BOARD), #{lectureNo},
+		 #{userId}, #{grade}, #{categoryName}, #{boardTitle}, #{boardContent}, #{boardFile})
+		</if>
+		
+		<if test="qboardNo == null">
+		INSERT INTO FREE_BOARD
+		 (FBOARD_NO,USER_ID,GRADE,BOARD_TITLE,BOARD_CONTENT,BOARD_FILE)
+		VALUES ((SELECT NVL(MAX(FBOARD_NO),0) + 1 FROM FREE_BOARD), #{userId},
+		 #{grade}, #{boardTitle}, #{boardContent}, #{boardFile})
+		</if>
+	</insert>	
+	
+	
+	
+	
+	<select id="countQnaBoard" parameterType="board" resultType="int">
+		<if test="section == 'qboard'">
+			SELECT COUNT(QBOARD_NO) FROM QUESTION_BOARD
+		</if>
+		<if test="section == 'fboard'">
+			SELECT COUNT(FBOARD_NO) FROM FREE_BOARD
+		</if>
+			WHERE 1 = 1
+		<if test="searchKeyword != null">		
+			AND (USER_ID LIKE '%'|| #{searchKeyword} ||'%'
+			OR BOARD_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+			OR BOARD_CONTENT LIKE '%'|| #{searchKeyword} ||'%')		
+		</if>			
+		<if test="boardAdopt != 'all'">
+			AND BOARD_ADOPT = #{boardAdopt}
+		</if>	
+	</select>
+	
+	
+	<select id="getQnaBoardList" parameterType="map" resultType="board">
+		SELECT * FROM
+			(SELECT ROWNUM R_NUM, B.* from
+				<if test="section=='qboard'"> 
+				(SELECT * FROM QUESTION_BOARD
+				</if> 
+				<if test="section=='fboard'"> 
+				(SELECT * FROM FREE_BOARD
+				</if> 
+					WHERE 1 = 1	
+					<if test="searchKeyword != null">
+					AND (
+					USER_ID LIKE '%'|| #{searchKeyword} ||'%'
+					OR BOARD_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+					OR BOARD_CONTENT LIKE '%'|| #{searchKeyword} ||'%')
+					</if>		
+					<if test="boardAdopt != 'all'">
+					AND BOARD_ADOPT = #{boardAdopt}
+					</if>		
+					ORDER BY ${ordering} DESC) B)					
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	
+	<update id="updateBoard" parameterType="board">
+		<if test="qboardNo != null">
+		UPDATE QUESTION_BOARD
+		</if>
+		<if test="fboardNo != null">
+		UPDATE FREE_BOARD
+		</if>
+		 SET BOARD_TITLE = #{boardTitle}, BOARD_CONTENT = #{boardContent}, BOARD_FILE = #{boardFile},
+		  BOARD_HIT = #{boardHit}, BOARD_LIKE = #{boardLike}, COMMENT_CNT = #{commentCnt}
+		<if test="qboardNo != null">
+		 ,BOARD_ADOPT = #{boardAdopt}  
+		 WHERE QBOARD_NO = #{qboardNo}
+		</if>
+		<if test="fboardNo != null">  
+		 WHERE FBOARD_NO = #{fboardNo}
+		</if>
+	</update>
+	
+	
+	<select id="getQnaLike" parameterType="map" resultType="qnaLike">
+		<if test="qboardNo != null">
+		SELECT * FROM
+		 QNA_LIKE
+		 WHERE USER_ID = #{userId}
+		AND BOARD_NO = #{qboardNo}
+		</if>
+		
+		<if test="fboardNo != null">
+		 SELECT * FROM
+		 FREE_LIKE
+		 WHERE USER_ID = #{userId}
+		AND BOARD_NO = #{fboardNo}
+		</if>
+		
+	</select>
+	
+	<insert id="insertQnaLike" parameterType="map">
+		<if test="qboardNo != null">
+		INSERT INTO QNA_LIKE
+		(USER_ID, BOARD_NO)
+		VALUES (#{userId}, #{qboardNo})
+		</if>
+		<if test="fboardNo != null">
+		INSERT INTO FREE_LIKE
+		(USER_ID, BOARD_NO)
+		VALUES (#{userId}, #{fboardNo})
+		</if>
+	</insert>
+	
+	<delete id="deleteQnaLike" parameterType="map">
+		<if test="qboardNo != null">
+		DELETE FROM QNA_LIKE
+		WHERE BOARD_NO = #{qboardNo}
+		</if>
+		
+		<if test="fboardNo != null">
+		DELETE FROM FREE_LIKE
+		WHERE BOARD_NO = #{fboardNo}
+		</if>
+	</delete>
+	
+	
+	<delete id="deleteBoard" parameterType="board">
+		<if test="qboardNo != null">
+			DELETE FROM QUESTION_BOARD WHERE QBOARD_NO = #{qboardNo}	
+		</if>
+		
+		<if test="fboardNo != null">
+			DELETE FROM FREE_BOARD WHERE FBOARD_NO = #{fboardNo}			
+		</if>
+	</delete>
+	
+	
+	<select id="getComment" parameterType="board" resultType="boardComment">
+		<if test="qboardNo != null">
+			SELECT * FROM QUESTION_ANSWER WHERE BOARD_NO = #{qboardNo} ORDER BY COMMENT_REGDATE ASC
+		</if>
+		
+		<if test="fboardNo != null">
+			SELECT * FROM BOARD_COMMENT WHERE BOARD_NO = #{fboardNo} ORDER BY COMMENT_REGDATE ASC
+		</if>	
+	</select>
+	
+	<select id="getBoard" parameterType="board" resultType="board">
+		<if test="qboardNo != null">
+			SELECT * FROM QUESTION_BOARD WHERE QBOARD_NO = #{qboardNo} ORDER BY BOARD_REGDATE
+		</if>
+		
+		<if test="fboardNo != null">
+			SELECT * FROM FREE_BOARD WHERE FBOARD_NO = #{fboardNo} ORDER BY BOARD_REGDATE
+		</if>	
+	</select>
+	
+	
+	<select id="getBoardList" parameterType="board" resultType="board">
+		<if test="qboardNo != null">
+			SELECT * FROM QUESTION_BOARD
+		</if>
+		
+		<if test="qboardNo == null">
+			SELECT * FROM FREE_BOARD
+		</if>
+		WHERE BOARD_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+		OR BOARD_CONTENT LIKE '%'|| #{searchKeyword} ||'%'
+		ORDER BY BOARD_REGDATE DESC
+	</select>
+	
+	<insert id="insertBoardReport" parameterType="boardReport">
+	
+		INSERT INTO BOARD_REPORT
+		(REPORT_REASON,BOARD_TYPE,BOARD_NO,REPORTER,REPPERSON)
+		VALUES 
+		(#{reportReason}, #{boardType}, #{boardNo}, #{reporter}, #{repperson} )
+	
+	</insert>
+	
+	<select id="getBoardReport" parameterType="map" resultType="boardReport">
+		SELECT * FROM BOARD_REPORT
+		WHERE BOARD_TYPE = #{boardType}
+		AND BOARD_NO = #{boardNo}
+		AND REPORTER = #{userId}
+	</select>
+	
+	<select id="getTopBoard" parameterType="board" resultType="board">
+	
+		SELECT * FROM
+			<if test="section=='qboard'">
+		    (SELECT * FROM QUESTION_BOARD
+		    </if>
+		    <if test="section=='fboard'">
+   		    (SELECT * FROM FREE_BOARD
+		    </if>
+		    WHERE BOARD_REGDATE BETWEEN SYSDATE -7 AND SYSDATE
+		    ORDER BY BOARD_HIT DESC)
+		WHERE ROWNUM BETWEEN 1 AND 5
+		
+	</select>
+	
+	<insert id="addComment" parameterType="boardComment">
+		<if test="section == 'qboard'">
+			INSERT INTO QUESTION_ANSWER
+			(COMMENT_NO, USER_ID, BOARD_NO, GRADE, COMMENT_CONTENT)
+			VALUES ((SELECT NVL(MAX(COMMENT_NO),0) + 1 FROM QUESTION_ANSWER),
+			#{userId}, #{boardNo}, #{grade}, #{commentContent})
+		</if>
+		<if test="section == 'fboard'">
+			INSERT INTO BOARD_COMMENT
+			(COMMENT_NO, USER_ID, BOARD_NO, GRADE, COMMENT_CONTENT)
+			VALUES ((SELECT NVL(MAX(COMMENT_NO),0) + 1 FROM BOARD_COMMENT),
+			#{userId}, #{boardNo}, #{grade}, #{commentContent})
+		</if>
+	</insert>
+	
+	<delete id="delComment">
+		<if test="section == 'qboard'">
+			DELETE FROM QUESTION_ANSWER
+		</if>
+		<if test="section == 'fboard'">
+			DELETE FROM BOARD_COMMENT
+		</if>
+		WHERE COMMENT_NO = #{commentNo}
+	</delete>
+	
+	<insert id="addCocomment" parameterType="boardComment">
+		<if test="qboardNo != null">
+			INSERT INTO QUESTION_ANSWER_COMMENT
+			(COMMENT2_NO, COMMENT_NO, USER_ID, GRADE, COMMENT2_CONTENT)
+			VALUES ((SELECT NVL(MAX(COMMENT2_NO),0) + 1 FROM QUESTION_ANSWER_COMMENT),
+			#{commentNo}, #{userId}, #{grade}, #{comment2Content})	
+		</if>
+		<if test="fboardNo != null">
+			INSERT INTO BOARD_COMMENT2
+			(COMMENT2_NO, COMMENT_NO, USER_ID, GRADE, COMMENT2_CONTENT)
+			VALUES ((SELECT NVL(MAX(COMMENT2_NO),0) + 1 FROM BOARD_COMMENT2),
+			#{commentNo}, #{userId}, #{grade}, #{comment2Content})	
+		</if>
+	</insert>
+	
+	<select id="getCocoment" parameterType="board" resultType="boardComment">
+		
+		<if test="qboardNo != null">
+		SELECT * FROM (		
+		SELECT QAC.*, QA.BOARD_NO QBOARD_NO FROM QUESTION_ANSWER_COMMENT QAC, QUESTION_ANSWER QA
+		WHERE QAC.COMMENT_NO = QA.COMMENT_NO		
+		ORDER BY COMMENT2_REGDATE ASC)
+		WHERE QBOARD_NO = #{qboardNo}
+		</if>
+		
+		<if test="fboardNo != null">
+		SELECT * FROM (		
+		SELECT BCC.*, BC.BOARD_NO FBOARD_NO FROM BOARD_COMMENT BC, BOARD_COMMENT2 BCC
+		WHERE BC.COMMENT_NO = BCC.COMMENT_NO		
+		ORDER BY COMMENT2_REGDATE ASC)
+		WHERE FBOARD_NO = #{fboardNo}
+		</if>
+		
+	</select>
+	
+	<delete id="delCocomment" parameterType="boardComment">
+		<if test="qboardNo != null">
+			DELETE FROM QUESTION_ANSWER_COMMENT
+		</if>
+		<if test="fboardNo != null">
+			DELETE FROM BOARD_COMMENT2
+		</if>
+			WHERE COMMENT2_NO = #{comment2No}
+	</delete>
+		
+	
+		<!-- 사용자 조회: 게시글 조회 -->
+	<select id="getMyBoardList" parameterType="hashMap" resultType="board">
+		SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM ( SELECT * FROM (
+		SELECT USER_ID, FBOARD_NO, NULL QBOARD_NO, NULL BOARD_ADOPT, BOARD_TITLE, BOARD_REGDATE, BOARD_LIKE, COMMENT_CNT FROM FREE_BOARD
+		UNION ALL
+		SELECT USER_ID, NULL FBOARD_NO, QBOARD_NO, BOARD_ADOPT, BOARD_TITLE, BOARD_REGDATE, BOARD_LIKE, COMMENT_CNT FROM QUESTION_BOARD
+		) WHERE USER_ID = #{userId}
+
+		<if test="type != null">
+			<if test="type == 1"> AND QBOARD_NO IS NOT NULL</if> <!-- 질문게시판 -->
+			<if test="type == 2"> AND FBOARD_NO IS NOT NULL</if> <!-- 자유게시판 -->
+		</if>
+		<if test="order != null">
+			<if test="order == 1"> ORDER BY BOARD_REGDATE DESC</if> <!-- 최신순 -->
+			<if test="order == 2"> ORDER BY BOARD_REGDATE</if> <!-- 오래된순 -->
+			<if test="order == 3"> ORDER BY BOARD_LIKE, BOARD_REGDATE DESC</if> <!-- 좋아요순 -->
+		</if>) K
+		) WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+
+	<select id="getMyBoardCount" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM (
+		SELECT USER_ID, FBOARD_NO, NULL QBOARD_NO, NULL BOARD_ADOPT, BOARD_TITLE, BOARD_REGDATE, BOARD_LIKE, COMMENT_CNT FROM FREE_BOARD
+		UNION ALL
+		SELECT USER_ID, NULL FBOARD_NO, QBOARD_NO, BOARD_ADOPT, BOARD_TITLE, BOARD_REGDATE, BOARD_LIKE, COMMENT_CNT FROM QUESTION_BOARD
+		)
+		WHERE USER_ID = #{userId}
+		<if test="type != null">
+			<if test="type == 1"> AND QBOARD_NO IS NOT NULL</if> <!-- 질문게시판 -->
+			<if test="type == 2"> AND FBOARD_NO IS NOT NULL</if> <!-- 자유게시판 -->
+		</if>
+		<if test="order != null">
+			<if test="order == 1"> ORDER BY BOARD_REGDATE DESC</if> <!-- 최신순 -->
+			<if test="order == 2"> ORDER BY BOARD_REGDATE</if> <!-- 오래된순 -->
+			<if test="order == 3"> ORDER BY BOARD_LIKE, BOARD_REGDATE DESC</if> <!-- 좋아요순 -->
+		</if>
+	</select>
+
+	<!--
+	int getMyQBoardCount(Map<String, String> pmap);
+
+	List<BoardVO> getMyQBoardList(Map<String, String> pmap);
+	-->
+
+	<select id="getMyQBoardList" parameterType="hashMap" resultType="board">
+		SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM ( SELECT * FROM (
+		SELECT USER_ID, QBOARD_NO, BOARD_ADOPT, BOARD_TITLE, BOARD_REGDATE, BOARD_LIKE, COMMENT_CNT FROM QUESTION_BOARD
+		) WHERE USER_ID = #{userId}
+		<if test="status != null">
+			<if test="status == 2"> AND BOARD_ADOPT = 'TRUE'</if> <!-- 해결됨 -->
+			<if test="status == 3"> AND BOARD_ADOPT = 'FALSE'</if> <!-- 미해결 -->
+		</if>
+		<if test="order != null">
+			<if test="order == 1"> ORDER BY BOARD_REGDATE DESC</if> <!-- 최신순 -->
+			<if test="order == 2"> ORDER BY BOARD_REGDATE</if> <!-- 오래된순 -->
+			<if test="order == 3"> ORDER BY BOARD_LIKE, BOARD_REGDATE DESC</if> <!-- 좋아요순 -->
+		</if>) K
+		) WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+
+	<select id="getMyQBoardCount" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM QUESTION_BOARD
+		WHERE USER_ID = #{userId}
+		<if test="status != null">
+			<if test="status == 2"> AND BOARD_ADOPT = 'TRUE'</if> <!-- 해결됨 -->
+			<if test="status == 3"> AND BOARD_ADOPT = 'FALSE'</if> <!-- 미해결 -->
+		</if>
+		<if test="order != null">
+			<if test="order == 1"> ORDER BY BOARD_REGDATE DESC</if> <!-- 최신순 -->
+			<if test="order == 2"> ORDER BY BOARD_REGDATE</if> <!-- 오래된순 -->
+			<if test="order == 3"> ORDER BY BOARD_LIKE, BOARD_REGDATE DESC</if> <!-- 좋아요순 -->
+		</if>
+	</select>
+
+</mapper>
+
+
+
+
+
+

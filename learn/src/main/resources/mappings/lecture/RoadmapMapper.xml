@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.roadmap.impl.RoadmapDAO">
+  <select id="getRoadmapDetail" parameterType="String" resultType="roadmap">
+    SELECT * FROM ROADMAP WHERE RBOARD_NO = #{rboardNo}
+  </select>
+  <select id="getTotalRoadmapLike" parameterType="string" resultType="int">
+    SELECT USER_COUNT FROM ROADMAP WHERE RBOARD_NO = #{rboardNo}
+  </select>
+  <select id="getMyroadmap" parameterType="hashMap" resultType="myroadmap">
+    SELECT * FROM MYROADMAP WHERE USER_ID = #{userId} AND RBOARD_NO = #{rboardNo}
+  </select>
+  <insert id="addMyroadmap" parameterType="hashMap">
+    INSERT INTO MYROADMAP VALUES (#{rboardNo}, #{userId}, SYSDATE, 0)
+  </insert>
+  <update id="addUserCount" parameterType="String">
+    UPDATE ROADMAP r
+    SET r.USER_COUNT = (
+    SELECT m.USER_COUNT + 1
+    FROM ROADMAP m
+    WHERE m.RBOARD_NO = r.RBOARD_NO)
+    WHERE r.RBOARD_NO = #{rboardNo}
+  </update>
+  <delete id="removeMyroadmap" parameterType="hashMap">
+    DELETE FROM MYROADMAP WHERE RBOARD_NO = #{rboardNo} AND USER_ID = #{userId}
+  </delete>
+  <update id="removeUserCount" parameterType="String">
+    UPDATE ROADMAP r
+    SET r.USER_COUNT = (
+    SELECT m.USER_COUNT - 1
+    FROM ROADMAP m
+    WHERE m.RBOARD_NO = r.RBOARD_NO)
+    WHERE r.RBOARD_NO = #{rboardNo}
+  </update>
+  <select id="getRoadmapManager" parameterType="String" resultType="roadmap">
+    SELECT * FROM
+    (SELECT ROWNUM R_NUM,
+    K.* FROM (SELECT * FROM ROADMAP WHERE USER_ID = #{userId} ORDER BY RBOARD_NO) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+  <select id="getRoadmapCount" parameterType="String" resultType="int">
+    SELECT COUNT(*) FROM ROADMAP WHERE USER_ID = #{userId}
+  </select>
+  <select id="isBuy" parameterType="hashMap" resultType="int">
+    SELECT NVL(MAX(ORDER_DETAIL_NO), 0) FROM ORDER_DETAIL
+    WHERE LECTURE_NO = #{lectureNo} AND USER_ID = #{userId}
+  </select>
+  <delete id="removeRoadmap" parameterType="hashMap">
+    DELETE FROM ROADMAP WHERE RBOARD_NO = #{rboardNo} AND USER_ID = #{userId}
+  </delete>
+  <insert id="insertRoadmap" parameterType="roadmap">
+    INSERT INTO ROADMAP
+    (RBOARD_NO, USER_ID, RBOARD_TITLE, RBOARD_CONTENT, LECTURE_LIST, CATEGORY_NAME, RBOARD_COVERIMG,
+		USER_NAME)
+    VALUES ((SELECT NVL(MAX(RBOARD_NO), 0) + 1 FROM ROADMAP)
+    , #{userId}, #{rboardTitle}, #{rboardContent}, #{lectureList}, #{categoryName}, #{rboardCoverimg},
+		#{userName})
+  </insert>
+  <update id="editRoadmap" parameterType="roadmap">
+    UPDATE ROADMAP SET
+    RBOARD_TITLE = #{rboardTitle},
+    RBOARD_CONTENT = #{rboardContent},
+    LECTURE_LIST = #{lectureList},
+    CATEGORY_NAME = #{categoryName},
+    RBOARD_COVERIMG = #{rboardCoverimg}
+    WHERE RBOARD_NO = #{rboardNo}
+  </update>
+
+	<select id="getFileName" parameterType="String" resultType="String">
+		SELECT RBOARD_COVERIMG FROM ROADMAP WHERE RBOARD_NO = #{robardNo}
+	</select>
+
+	<select id="getRoadmaps" parameterType="map" resultType="roadmap">
+	SELECT *
+	FROM (SELECT ROWNUM AS ROW_NUM, C.* 
+		  FROM (SELECT * 
+				FROM ROADMAP
+				<where>
+			        <if test="categoryName != null and categoryName != ''">
+			            AND CATEGORY_NAME = #{categoryName}
+			        </if>
+			    </where>
+				ORDER BY RBOARD_NO DESC) C) R
+	WHERE ROW_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="getRoadmapTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM ROADMAP
+		<where>
+			USER_ID NOT IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+			<if test="categoryName != null and categoryName != '' ">
+				AND CATEGORY_NAME = #{categoryName}
+			</if> 
+	   		<if test="searchKeyword != null and searchKeyword != ''">
+	   			<choose>
+	   				<when test="searchFilter == 'title'">
+			   			AND RBOARD_TITLE LIKE '%'||#{searchKeyword}||'%'	   				
+	   				</when>
+	   				<when test="searchFilter == 'content'">
+	   					AND RBOARD_CONTENT LIKE '%'||#{searchKeyword}||'%'
+	   				</when>
+	   				<otherwise>
+	   					AND USER_NAME LIKE '%'||#{searchKeyword}||'%'
+	   				</otherwise>
+	   			</choose>
+	   		</if>
+		</where>
+	</select>
+	
+	<select id="getRoadmapsFiltering" parameterType="map" resultType="roadmap">
+	SELECT R.*
+	FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		  FROM (SELECT * FROM ROADMAP
+					<where>
+					NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+						<if test="categoryName != null and categoryName !=''">
+							AND CATEGORY_NAME = #{categoryName}
+						</if>
+						<if test="searchKeyword != null and searchKeyword !=''">
+							<choose>
+								<when test="searchFilter == 'title'">
+									AND RBOARD_TITLE LIKE '%'||#{searchKeyword}||'%'
+								</when>
+								<when test="searchFilter == 'content'">
+									AND RBOARD_CONTENT LIKE '%'||#{searchKeyword}||'%'
+								</when>
+								<otherwise>
+									AND USER_NAME LIKE '%'||#{searchKeyword}||'%'
+								</otherwise>
+							</choose>
+						</if>
+					</where>
+					<trim prefix="ORDER BY">
+			            <if test="orderKeyword == 'student'">USER_COUNT DESC</if>                 
+			            <if test="orderKeyword == 'new' or orderKeyword == null or orderKeyword == ''">RBOARD_NO DESC</if>                 
+			            <if test="orderKeyword == 'old'">RBOARD_NO ASC</if>                 
+					</trim>
+					) C) R
+	WHERE ROW_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<!-- 유저페이지 로드맵을 위한거 -->
+	<select id="get3Roadmap" parameterType="String" resultType="roadmap">
+    	select * from (select * from ROADMAP where user_id = #{userId} ) where rowNUM <![CDATA[ < ]]>= 3 order by rboard_no DESC
+  	</select>
+	
+	<!-- 유저페이지 로드맵을 위한거 -->
+	<select id="getRoadmap" parameterType="String" resultType="roadmap">
+		select * from ROADMAP where user_id = #{userId}
+  	</select>
+  	
+  	
+</mapper>

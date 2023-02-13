@@ -1,0 +1,59 @@
+<%@ page pageEncoding="UTF-8"%>
+<style>
+    li p {
+      margin-bottom: 3px;
+    }
+    li h5 {
+      font-weight: bold;
+    }
+</style>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <h5>HOME</h5>
+        <p>
+            <a id="profileMenu" class="norm-menu"
+              href="${pageContext.request.contextPath}/member/goToPersonalPage.do?userId=${user.userId}">프로필</a>
+        </p>
+    </li>
+    <li class="list-group-item">
+        <h5>학습 관리</h5>
+        <p>
+            <a id="mystudyMenu" class="norm-menu"
+              href="${pageContext.request.contextPath}/memberBoard/goMyLectureList.do">내학습</a>
+        </p>
+        <p>
+            <a id="myboardMenu" class="norm-menu"
+               href="${pageContext.request.contextPath}/memberBoard/callCenterBoardList.do?userId=${user.userId}">작성한 게시글</a>
+        </p>
+    </li>
+    <li class="list-group-item">
+        <h5>수강 신청</h5>
+        <p>
+            <a id="cart" class="norm-menu"
+               href="${pageContext.request.contextPath}/order/myCartGo.do?userId=${user.userId }">수강 바구니</a>
+        </p>
+        <p>
+            <a id="mylike" class="norm-menu"
+               href="${pageContext.request.contextPath}/Member/likeGo.do?userId=${user.userId }">좋아요</a>
+        </p>
+        <p>
+            <a id="pointMenu" class="norm-menu"
+               href="${pageContext.request.contextPath}/Member/viewPoints.do">포인트</a>
+        </p>
+        <p>
+            <a id="buylistMenu" class="norm-menu"
+               href="${pageContext.request.contextPath}/Order/orderDetailGo.do?userId=${user.userId }">구매내역</a>
+        </p>
+    </li>
+    <li class="list-group-item">
+        <h5>설정</h5>
+        <p>
+            <a id="mypageMenu" class="norm-menu"
+               href="${pageContext.request.contextPath}/Member/myPage.jsp">계정정보</a>
+        </p>
+        <p>
+            <a id="belectureMenu" class="norm-menu"
+               href="getResume.do?userId=${user.userId }">지식공유 현황보기</a>
+        </p>
+    </li>
+</ul>

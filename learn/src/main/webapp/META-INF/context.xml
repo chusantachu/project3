@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/learn/filepath" reloadable="true" docBase="\\192.168.18.11\temp\">
+  <Resources allowLinking="true" />
+</Context>

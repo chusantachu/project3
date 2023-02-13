@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.spring.learn.home.impl.homeDAO">
+	<select id="getStarterLectureList" resultType="lecture">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM LECTURE
+				        WHERE LECTURE_LEVEL = '입문' 
+				        AND LECTURE_PRICE > 0
+				        ORDER BY LECTURE_NO DESC) C) L
+		WHERE ROW_NUM BETWEEN 1 AND 4
+	</select>
+	
+	<select id="getFreeLectureList" resultType="lecture">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM LECTURE
+				        WHERE LECTURE_PRICE = 0
+				        ORDER BY LECTURE_NO DESC) C) L
+		WHERE ROW_NUM BETWEEN 1 AND 4
+	</select>
+	
+	<select id="getIndexRoadMapList" resultType="roadmap">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM ROADMAP
+				        ORDER BY RBOARD_NO ) C) L
+		WHERE ROW_NUM BETWEEN 1 AND 3
+	</select>
+	
+	<select id="getIndexReviewList" resultType="homeVO">
+        SELECT R.*, U.USER_NAME, L.LECTURE_TITLE
+        FROM LECTURE_REVIEW R, USERS U, LECTURE L
+        WHERE R.USER_ID = U.USER_ID
+        AND R.LECTURE_NO = L.LECTURE_NO
+        ORDER BY BOARD_REGDATE DESC
+	</select>
+
+	<select id="getLectureIndexList" parameterType="map" resultType="homeVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE
+		                WHERE 1 = 1
+		               <if test="searchKeyword != null">
+							AND ( LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+							OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%')		
+						</if>		
+	                 	ORDER BY LECTURE_NO, LECTURE_ON_OFF
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countLectureIndex" parameterType="homeVO" resultType="int">
+		SELECT COUNT(LECTURE_NO) FROM LECTURE
+		<if test="searchKeyword != null">
+			WHERE LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+			OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%'		
+		</if>		
+	</select>
+	
+		<select id="getLectureIndexList_on" parameterType="map" resultType="homeVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE
+		                WHERE 1 = 1
+		               <if test="searchKeyword != null">
+		               		AND LECTURE_ON_OFF = 0
+							AND ( LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+							OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%')		
+						</if>		
+	                 	ORDER BY LECTURE_NO, LECTURE_ON_OFF
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countLectureIndex_on" parameterType="homeVO" resultType="int">
+		SELECT COUNT(LECTURE_NO) FROM LECTURE
+		<if test="searchKeyword != null">
+			WHERE LECTURE_ON_OFF = 0
+			AND LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+			OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%'		
+		</if>		
+	</select>
+	
+		<select id="getLectureIndexList_off" parameterType="map" resultType="homeVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE
+		                WHERE 1 = 1
+		               <if test="searchKeyword != null">
+		              		 AND LECTURE_ON_OFF = 1
+							AND ( LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+							OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%')		
+						</if>		
+	                 	ORDER BY LECTURE_NO, LECTURE_ON_OFF
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countLectureIndex_off" parameterType="homeVO" resultType="int">
+		SELECT COUNT(LECTURE_NO) FROM LECTURE
+		<if test="searchKeyword != null">
+			WHERE LECTURE_ON_OFF = 0
+			AND LECTURE_TITLE LIKE '%'|| #{searchKeyword} ||'%'
+			OR LECTURE_CONTENT LIKE '%'|| #{searchKeyword} ||'%'		
+		</if>		
+	</select>
+	
+</mapper>
+
+
+
+
+
+

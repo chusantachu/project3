@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.order.impl.OrderDAO">
+	
+	<select id="getCartList" parameterType="orderCartVO" resultType="orderCartVO">
+		SELECT * FROM cart_view
+		WHERE USER_ID = #{userId}
+		ORDER BY CART_NO
+	</select>
+	
+	<delete id="deleteCart" parameterType="orderCartVO">
+		DELETE FROM cart
+		WHERE USER_ID = #{userId}
+		AND CART_NO = #{cartNo}
+	</delete>
+	
+	<select id="getPoint" parameterType="orderCartVO" resultType="int">
+		SELECT points FROM users
+		WHERE USER_ID = #{userId}
+	</select>
+	
+	<select id="getPrice" parameterType="orderCartVO" resultType="orderCartVO">
+		select * from cart_view
+		WHERE USER_ID = #{userId}
+	</select>
+	
+	<select id="getRealPrice" parameterType="orderCartVO" resultType="orderCartVO">
+		select * from cart_view
+		WHERE USER_ID = #{userId} and cart_no = #{cartNo}
+	</select>
+	
+	<select id="getLecture" parameterType="orderCartVO" resultType="orderCartVO">
+		select * from cart_view
+		WHERE USER_ID = #{userId} and cart_no = #{cartNo}
+	</select>
+	
+	<update id="updateUserPoint" parameterType="orderCartVO">
+		update users set points = ((SELECT points from users where user_id = #{userId})-#{points})
+		WHERE user_id = #{userId}
+	</update>
+	
+	<update id="updateLectureStudentCnt" parameterType="orderCartVO">
+		update lecture set student_count = nvl((SELECT student_count from lecture where lecture_no = #{lectureNo}), 0)+1
+		WHERE lecture_no = #{lectureNo}
+	</update>
+	
+	<insert id="insertOrder" parameterType="orderFinishVO">
+		insert into orders values((select max(order_no) from orders) + 1, #{userId}, #{orderPrice}, sysdate, #{orderPayment})
+	</insert>
+	
+	<insert id="insertPointLog" parameterType="orderFinishVO">
+		insert into point_log values(nvl((select max(log_num) from point_log), 1) + 1, #{userId}, #{orderNo}, #{point}, sysdate, #{earnPoint})
+	</insert>
+	
+	<insert id="insertOrderDetail" parameterType="orderFinishVO">
+		insert into order_detail values(nvl((select max(order_detail_no) from order_detail), 1) + 1, #{orderNo}, #{userId}, #{lectureNo}, 0, 0, 0)
+	</insert>
+	
+	<select id="getOrderNo" resultType="int">
+		select max(order_no) from orders
+	</select>
+	
+	<select id="getOrderList" parameterType="orderCheckVO" resultType="orderCheckVO">
+		SELECT * from order_view where user_id = #{userId} order by order_detail_no
+	</select>
+	
+	
+	
+</mapper>
+
+
+
+
+
+

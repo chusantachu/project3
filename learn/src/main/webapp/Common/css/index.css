@@ -1,0 +1,192 @@
+@charset "UTF-8";
+.outer {text-align: center;}
+.inner {
+	margin-left: 250px;
+	margin-top: 120px;
+	width: 600px;
+}
+.inner2 {
+	display: inline-block;
+	text-align: center;
+}
+.inner3 {
+	background-color: #DFD5DD;
+	height: 182px;
+}
+.inner4 {text-align: center;}
+.inner5 {
+	height: 550px;
+	background-color: #F9F9F9;
+}
+.inner6 {
+	height: 400px;
+	display: inline-block;
+}
+.inner8 {
+	display: inline-block;
+	width: 1100px;
+}
+.lecturer { 
+	display: inline-block;
+	float: right;
+	margin-right: 400px;
+}
+.lectureWrite {
+	float: left;
+	text-align: center;
+	margin-left: 400px;
+	margin-top: 50px;
+}
+.serviceWrite {
+	display: inline-block;
+	width: 1200px;
+	text-align: left;
+}
+.service {
+	float: left; 
+	width: 380px;
+	padding: 80px 30px 0px;
+	border: 1px solid #EAEAEA;
+	height: 400px;
+	background-color: white;
+	text-align: left;
+}
+.jump {
+	float: left; 
+	width: 20px;
+	border: 1px solid #F9F9F9;
+}
+.serviceAll {
+	display: inline-block;
+	width: 1200px;
+}
+.search {
+	height: 50px;
+	width: 500px;
+		background: #E3F8EF;
+}
+.searchInput {
+	margin-top: 13px;
+		font-size: 15px; 
+		width: 325px; 
+	border: 0px;
+		outline: none; 
+	float: left;
+	background: #E3F8EF;
+}
+.searchButton {
+	width: 50px;
+	height: 100%;
+	border: 0px;
+	background: #E3F8EF;
+	outline: none;
+	float: right;
+	color: gray;
+}
+.searchButton img {width: 70%;}
+.lectureButton {
+	border: none;
+	color: white;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 15px;
+		margin: 15x 50px; 
+	transition-duration: 0.4s;
+	cursor: pointer;
+	background-color: white;
+	color: black;
+		border: none;
+}
+.lectureButton:hover {background-color: #e7e7e7;}
+.serviceButton {
+	background-color: #00C471;
+	border: none;
+	color: white;
+	padding: 10px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	cursor: pointer;
+	border-radius: 20px;
+}
+.reviewWrite {
+	float: left;
+	padding-top: 100px; 
+	text-align: left;
+	height: 400px;
+}
+.review {
+	float: left;
+	height: 400px;
+	overflow: scroll; 
+	padding: 50px; 
+ 	padding-left: 100px;  
+  	width: 630px;
+}
+.review::-webkit-scrollbar {display: none;} /* 크롬,사파리에서 스크롤바숨기기 (스크롤 작동은 됨)*/ 
+.reviewGo {
+	background-color: #F9F9F9;
+	border: 2px solid #EAEAEA;
+	text-align: left;
+	padding: 10px; 
+	border-radius: 10px;
+	padding-right: 100px;
+}
+.reviewGo a:hover {
+	font-weight: bold;
+	color: gray;
+}
+.reviewGo a {
+	font-weight: bold; 
+	font-size: 1.1em;
+	color: black;
+}	
+.roadMapWrite {width: 700px;}
+.roadMapAll {
+	display: inline-block;
+	width: 1400px;
+}
+.roadMapAll a:hover {
+	color: black;
+	filter: brightness(0.7);
+}
+.roadMapAll a {color: black;}
+.roadMapAll a .roadMapPrice {
+	color: #3A74C8;
+	font-weight: bold;
+}
+.roadMap {
+	float: left; 
+	width: 320px;
+	height: 325px;
+	text-align: left;
+}
+.roadMapPicture {
+	height: 200px;
+	width: 325px;
+}
+.roadMapPicture img {
+	height: 200px;
+	width: 325px;
+	filter: brightness(1);
+}
+.roadMapExplain {padding-top: 10px;}
+.jump2 {
+	float: left; 
+	width: 20px;
+	border: 1px solid #F9F9F9;
+}
+.card .info {
+	color: #fff;
+	position: absolute; left: 0; bottom: 0;
+	background: rgba(0,0,0,0.8);
+	width: 100%;
+	height: 100%;
+	padding: 15px;
+	opacity: 0;
+	transition: opacity 0.35s ease-in-out;
+}
+.card:hover .info {opacity: 1;}

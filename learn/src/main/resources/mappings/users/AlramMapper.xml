@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alramDAO">
+
+	<insert id="insertAlram" parameterType="alramVO">
+		INSERT INTO ALRAM_LIST (A_NO, TO_ID, FROM_ID, TITLE, B_NO, CATEGORI)
+	 	VALUES ((SELECT NVL(MAX(A_NO),0) + 1 FROM ALRAM_LIST), #{toId}, #{fromId}, #{title},#{bNo}, #{categori})
+	</insert>
+	
+	<insert id="deleteAlram" parameterType="alramVO">
+		INSERT INTO ALRAM_LIST (A_NO, TO_ID, FROM_ID, TITLE, B_NO, CATEGORI)
+	 	VALUES ((SELECT NVL(MAX(A_NO),0) + 1 FROM ALRAM_LIST), #{toId}, #{fromId}, #{title},#{bNo}, #{categori})
+	</insert>
+	
+	<select id="getAlramList" parameterType="alramVO" resultType="alramVO">
+		select * from (select * from alram_list where TO_ID = #{toId} ) where rowNUM <![CDATA[ < ]]>= 6 order by A_NO DESC
+	</select>
+	
+	<select id="alramCount" parameterType="alramVO" resultType="int">
+		select count(*) from alram_list where TO_ID = #{toId}
+	</select>
+
+	<delete id="alramDelete" parameterType="alramVO">
+		delete from alram_list where A_NO = #{aNo}
+	</delete>
+
+
+
+	
+</mapper>
+
+
+
+
+
+

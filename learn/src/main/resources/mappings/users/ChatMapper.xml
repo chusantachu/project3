@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chatDAO">
+
+	<select id="CheckList" parameterType="userVO" resultType="chatVO">
+		SELECT * FROM chatting_list WHERE USER_ID = #{userId}
+	</select>
+	
+	<insert id="insertChatList" parameterType="userVO">
+		insert into chatting_list values((SELECT nvl(MAX(chat_no), 1) from chatting_list)+1, #{userId}, '관리자와 채팅', sysdate, 1)
+	</insert>
+	
+	<select id="getContentList" parameterType="chatVO" resultType="chatVO">
+		SELECT * FROM chatting_contentlist WHERE chat_no = #{chatNo} order by content_no
+	</select>
+	
+	<insert id="insetChatContent" parameterType="chatVO">
+		insert into chatting_contentlist VALUES((select nvl(max(content_no), 1) from chatting_contentlist)+1, #{chatNo}, #{sendId}, #{content}, sysdate)
+	</insert>
+	
+	<update id="updateChatList1" parameterType="chatVO">
+		update chatting_list set chat_ok = 1, 
+								 chat_regdate = sysdate
+		where chat_no = #{chatNo}
+								 
+	</update>
+	
+	<update id="updateChatList0" parameterType="chatVO">
+		update chatting_list set chat_ok = 0,
+								 chat_regdate = sysdate
+		where chat_no = #{chatNo}
+	</update>
+	
+	<select id="getContentRoomList" resultType="chatVO">
+		SELECT * FROM chatting_list order by chat_ok, chat_no
+	</select>
+	
+	<select id="getRegRoomList" resultType="chatVO">
+		SELECT * FROM chatting_list order by chat_ok, chat_regdate desc
+	</select>
+	
+	<select id="getReversRoomList" resultType="chatVO">
+		SELECT * FROM chatting_list order by chat_ok desc, chat_no
+	</select>
+	
+	<select id="getReversRegRoomList" resultType="chatVO">
+		SELECT * FROM chatting_list order by chat_ok desc, chat_regdate desc
+	</select>
+	
+	
+</mapper>
+
+
+
+
+
+

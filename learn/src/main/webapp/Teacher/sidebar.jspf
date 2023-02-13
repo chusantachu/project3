@@ -1,0 +1,18 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <h5><b>강의자 메뉴</b></h5>
+    </li>
+    <li class="list-group-item">
+        <a id="dashboard" class="norm-menu" href="${pageContext.request.contextPath}/Teacher/dashboard.do">대시보드</a>
+    </li>
+    <li class="list-group-item">
+        <a id="lectureManager" class="norm-menu" href="${pageContext.request.contextPath}/Teacher/lectureManager.do">강의 관리</a>
+    </li>
+    <li class="list-group-item">
+        <a id="salesView" class="norm-menu" href="${pageContext.request.contextPath}/Teacher/salesView.do">매출 조회</a>
+    </li>
+    <li class="list-group-item">
+        <a id="roadmapManager" class="norm-menu" href="${pageContext.request.contextPath}/Teacher/roadmapManager.do">로드맵 관리</a>
+    </li>
+</ul>

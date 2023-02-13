@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="resumeDAO">
+
+	<insert id="insertResume" parameterType="resume">
+		INSERT INTO RESUME (USER_ID, CATEGORY_NAME,
+		 USER_NAME, USER_TEL, USER_INTRODUCE, USER_LINK, RESUME_STATUS)
+		 VALUES(#{userId}, #{categoryName}, #{userName},
+		  #{userTel}, #{userIntroduce}, #{userLink}, 'false')
+	</insert>
+	<select id="getResume" parameterType="resume" resultType="resume">
+		SELECT USER_ID, CATEGORY_NAME,
+		 USER_NAME, USER_TEL, USER_INTRODUCE, USER_LINK, RESUME_STATUS, REGDATE FROM RESUME
+		 WHERE USER_ID = #{userId}
+	</select>
+	<update id="updateResume" parameterType="resume">
+		UPDATE RESUME SET 
+		USER_ID = #{userId},  CATEGORY_NAME=#{categoryName},
+		USER_NAME= #{userName}, USER_TEL = #{userTel},
+		USER_INTRODUCE = #{userIntroduce}, USER_LINK = #{userLink}
+		WHERE USER_ID = #{userId}
+	</update>
+	<delete id="deleteResume" parameterType="resume">
+		DELETE FROM RESUME WHERE USER_ID = #{userId}
+	</delete>
+	
+	<!-- 관리자페이지 데이터 확인용 -->
+	<select id="countFalseResume" resultType="int">
+		SELECT COUNT(*) FROM RESUME
+		WHERE RESUME_STATUS = 'false'
+	</select>
+	
+	<select id="getFalseResume" resultType="resume">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+			FROM (	SELECT *
+					FROM RESUME
+						WHERE 1 = 1
+						AND RESUME_STATUS = 'false'
+						ORDER BY REGDATE
+				 ) B 
+			 )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countTrueResume" parameterType="resume" resultType="int">
+		SELECT COUNT(*) FROM RESUME
+		WHERE RESUME_STATUS = 'true'
+	</select>
+	
+	<select id="getTrueResume" parameterType="map" resultType="resume">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+			FROM (	SELECT *
+					FROM RESUME
+						WHERE 1 = 1
+						AND RESUME_STATUS = 'true'
+						ORDER BY REGDATE DESC
+				 ) B 
+			 )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<update id="updateResumeStatus" parameterType="resume">
+		UPDATE RESUME SET 
+		RESUME_STATUS = 'true'
+		WHERE USER_ID = #{userId}
+	</update>
+</mapper>
+
+
+
+
+
+

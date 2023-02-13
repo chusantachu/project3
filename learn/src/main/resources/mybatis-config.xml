@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+  
+	<typeAliases>
+		<!-- 재영 추가 -->		
+		<typeAlias alias="board" type="com.spring.learn.board.BoardVO"/>
+		<typeAlias alias="memberBoard" type="com.spring.learn.memberboard.MemberBoardVO"/>
+		<typeAlias alias="CallcenterComment" type="com.spring.learn.memberboard.CallcenterCommentVO"/>	
+		<typeAlias alias="boardComment" type="com.spring.learn.board.BoardCommentVO"/>	
+		<typeAlias alias="qnaLike" type="com.spring.learn.board.QnaLikeVO"/>
+		<typeAlias alias="memberChatRoomList" type="com.spring.learn.user.MemberChatRoomListVO"/>
+		<typeAlias alias="memberChatContents" type="com.spring.learn.user.MemberChatContentsVO"/>
+		
+		
+		<!-- ===================================== -->
+		
+		
+		
+		
+		<typeAlias alias="resume" type="com.spring.learn.resume.ResumeVO"/>
+		<typeAlias alias="userVO" type="com.spring.learn.user.UserVO"/>
+		<typeAlias alias="boardReport" type="com.spring.learn.board.BoardReportVO"/>
+		<typeAlias alias="OrdersDetail" type="com.spring.learn.memberboard.OrdersDetailVO"/>	
+		<typeAlias alias="chatVO" type="com.spring.learn.user.ChatVO"/>
+		<typeAlias alias="alramVO" type="com.spring.learn.echo.AlramVO"/>
+		<typeAlias alias="likeVO" type="com.spring.learn.user.LikeVO"/>
+		<typeAlias alias="orderCartVO" type="com.spring.learn.order.OrderCartVO"/>
+		<typeAlias alias="orderCheckVO" type="com.spring.learn.order.OrderCheckVO"/>
+		<typeAlias alias="orderFinishVO" type="com.spring.learn.order.OrderFinishVO"/>
+		
+
+
+
+		<!-- 현지 추가 -->
+		<typeAlias alias="noticeVO" type="com.spring.learn.board.NoticeVO"/>
+		<typeAlias alias="faqVO" type="com.spring.learn.board.FaqVO"/>
+		<typeAlias alias="lectureNewsVO" type="com.spring.learn.lecture.LectureNewsVO"/>
+		<typeAlias alias="reportResultVO" type="com.spring.learn.board.ReportResultVO"/>
+		<typeAlias alias="homeVO" type="com.spring.learn.home.HomeVO"/>
+		<!-- ========================== -->
+	
+		<typeAlias alias="roadmap" type="com.spring.learn.roadmap.RoadmapVO"/>
+		<typeAlias alias="myroadmap" type="com.spring.learn.roadmap.MyroadmapVO"/>
+		<typeAlias alias="lecture" type="com.spring.learn.lecture.LectureVO"/>
+		<typeAlias alias="class" type="com.spring.learn.lecture.ClassVO"/>
+		<typeAlias alias="offtimetable" type="com.spring.learn.lecture.OfftimetableVO"/>
+		<typeAlias alias="lectureComment" type="com.spring.learn.lecture.LectureCommentVO"/>
+		<typeAlias alias="lectureCommentReply" type="com.spring.learn.lecture.LectureReviewCommentVO"/>
+		
+		
+		<!-- 수경 admin 추가 -->
+		<typeAlias alias="revenueDetail" type="com.spring.learn.admin.AdminRevenueDatailVO"/>
+		<typeAlias alias="revenue" type="com.spring.learn.admin.RevenueVO"/>
+		<typeAlias alias="joiner" type="com.spring.learn.admin.JoinerVO"/>
+
+		<typeAlias alias="pointlog" type="com.spring.learn.user.PointLogVO"/>
+	
+	</typeAliases>
+			
+	
+</configuration>

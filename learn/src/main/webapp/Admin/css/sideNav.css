@@ -1,0 +1,35 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+.ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  width: 150px;
+/*   background: #00C471; */
+  background: none;
+  height: 50%;
+  overflow: auto;
+  position: fixed;
+}
+
+.li a {
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+  color: #000;
+  font-weight: bold;
+}
+
+.li a:hover {
+  color: #00C471;
+  text-decoration: none;
+}
+.cd1 {
+  margin-left: 120px;
+}
+.menu {
+ 	padding-top: 0%;
+ 	font-family: 'Poor Story', cursive;
+}
+
+

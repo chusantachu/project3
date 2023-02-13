@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.admin.impl.AdminDAO">
+
+	<select id="getJoinerEachMonth" parameterType="map" resultType="joiner">
+		SELECT TO_CHAR(D.DT, 'YYYY/MM') AS MONTH, NVL(SUM(GENERAL), 0) AS GENERAL, NVL(SUM(NAVER), 0) AS NAVER, NVL(SUM(GOOGLE), 0) AS GOOGLE, NVL(SUM(TOTAL), 0) AS TOTAL
+		FROM (SELECT USER_REGDATE AS USERDATE,
+		    COUNT(DECODE(SOCIAL_TYPE, NULL, 1)) AS GENERAL,
+		    COUNT(DECODE(SOCIAL_TYPE, 'naver', 1)) AS NAVER,
+		    COUNT(DECODE(SOCIAL_TYPE, 'google', 1)) AS GOOGLE,
+		    COUNT(*) AS TOTAL
+		    FROM USERS
+		    WHERE USER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND
+		         TO_DATE(#{endDate}, 'YYYYMMDD')+1
+		    AND GRADE != '탈퇴' AND GRADE != '관리자'
+		    GROUP BY USER_REGDATE
+		    ) O
+		    , (SELECT TO_DATE(#{startDate},'YYYYMMDD') + LEVEL - 1 AS DT
+		        FROM dual 
+		        CONNECT BY LEVEL &lt;= (TO_DATE(#{endDate},'YYYYMMDD')
+		               - TO_DATE(#{startDate},'YYYYMMDD') + 1)
+		    ) D
+		WHERE D.DT = O.USERDATE(+)
+		GROUP BY TO_CHAR(D.DT, 'YYYY/MM')
+		ORDER BY TO_CHAR(D.DT, 'YYYY/MM')
+	</select>
+	
+	
+	<select id="getRevenueTotalInfo" parameterType="map" resultType="revenueDetail">
+		SELECT * FROM ADMIN_REVENUE_DETAIL
+		WHERE ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')+1
+		ORDER BY ORDER_REGDATE DESC
+	</select>
+	
+	<select id="getRevenueTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM ADMIN_REVENUE_DETAIL
+		<where>
+			<choose>
+				<when test="startDate != null and startDate != ''">
+					ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')+1
+				</when>
+				<otherwise>
+					ORDER_REGDATE BETWEEN ADD_MONTHS(SYSDATE,-5) AND SYSDATE+1
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+
+	<select id="getRevenueDetail" parameterType="map" resultType="revenueDetail">
+		SELECT T.*
+		FROM (
+			SELECT ROWNUM AS ROW_NUM, D.*
+			FROM (
+				SELECT * FROM ADMIN_REVENUE_DETAIL
+				<where>
+				<choose>
+					<when test="startDate != null and startDate != ''">
+						AND ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')+1
+					</when>
+					<otherwise>
+						AND ORDER_REGDATE BETWEEN ADD_MONTHS(SYSDATE,-5) AND SYSDATE+1
+					</otherwise>
+				</choose>
+				</where>
+				ORDER BY ORDER_REGDATE DESC
+				) D
+			) T
+		WHERE ROW_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	
+	<select id="getRevenueEachMonth" parameterType="map" resultType="revenue">
+	    SELECT TO_CHAR(D.DT, 'YYYY/MM') AS FILTER, NVL(SUM(O.ON_REVENUE*0.15), 0) AS ON_REVENUE, NVL(SUM(O.OFF_REVENUE*0.15), 0) AS OFF_REVENUE, NVL(SUM(O.TOT_REVENUE*0.15), 0) AS TOT_REVENUE
+	    FROM (SELECT TO_CHAR(ORDER_REGDATE, 'YYYYMMDD') AS ORDERDATE,
+	        SUM(DECODE(LECTURE_ON_OFF, '0', LECTURE_PRICE, 0)) AS ON_REVENUE,
+	        SUM(DECODE(LECTURE_ON_OFF, '1', LECTURE_PRICE, 0)) AS OFF_REVENUE,
+	        SUM(LECTURE_PRICE) AS TOT_REVENUE
+	        FROM ADMIN_REVENUE
+	        WHERE ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND
+	             TO_DATE(#{endDate}, 'YYYYMMDD')+1
+	        GROUP BY TO_CHAR(ORDER_REGDATE, 'YYYYMMDD')
+	        ) O		    
+	        , (SELECT TO_DATE(#{startDate},'YYYYMMDD') + LEVEL-1 AS DT
+	            FROM dual 
+	            CONNECT BY LEVEL &lt;= (TO_DATE(#{endDate},'YYYYMMDD')
+	                   - TO_DATE(#{startDate},'YYYYMMDD') + 1)
+	        ) D
+	    WHERE D.DT = O.ORDERDATE(+)
+	    GROUP BY TO_CHAR(D.DT, 'YYYY/MM')
+	    ORDER BY TO_CHAR(D.DT, 'YYYY/MM')
+	</select>
+	
+	<select id="getRevenueEachWeekly" parameterType="map" resultType="revenue">
+		SELECT CONCAT(CONCAT(TO_CHAR(TRUNC(D.DT, 'IW'), 'YYYY/MM/DD'), '-'), TO_CHAR(TRUNC(D.DT, 'IW')+6, 'YYYY/MM/DD')) AS FILTER, TRUNC(D.DT, 'IW'), TRUNC(D.DT, 'IW')+6, NVL(SUM(O.ON_REVENUE*0.15), 0) AS ON_REVENUE, NVL(SUM(O.OFF_REVENUE*0.15), 0) AS OFF_REVENUE, NVL(SUM(O.TOT_REVENUE*0.15), 0) AS TOT_REVENUE
+		FROM (SELECT TO_CHAR(ORDER_REGDATE, 'YYYYMMDD') AS ORDERDATE,
+		    SUM(DECODE(LECTURE_ON_OFF, '0', LECTURE_PRICE, 0)) AS ON_REVENUE,
+		    SUM(DECODE(LECTURE_ON_OFF, '1', LECTURE_PRICE, 0)) AS OFF_REVENUE,
+		    SUM(LECTURE_PRICE) AS TOT_REVENUE
+		    FROM ADMIN_REVENUE
+		    WHERE ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND
+		         TO_DATE(#{endDate}, 'YYYYMMDD')+1
+		    GROUP BY TO_CHAR(ORDER_REGDATE, 'YYYYMMDD')
+		    ) O		    
+		    , (SELECT TO_DATE(#{startDate},'YYYYMMDD') + LEVEL-1 AS DT
+		        FROM dual 
+		        CONNECT BY LEVEL &lt;= (TO_DATE(#{endDate},'YYYYMMDD')
+		               - TO_DATE(#{startDate},'YYYYMMDD') + 1)
+		    ) D
+		WHERE D.DT = O.ORDERDATE(+)
+		GROUP BY TRUNC(D.DT, 'IW')
+		ORDER BY TRUNC(D.DT, 'IW')
+	</select>
+	
+	<select id="getRevenueEachDaily" parameterType="map" resultType="revenue">
+	    SELECT TO_CHAR(D.DT, 'YYYY/MM/DD') AS FILTER, NVL(SUM(O.ON_REVENUE*0.15), 0) AS ON_REVENUE, NVL(SUM(O.OFF_REVENUE*0.15), 0) AS OFF_REVENUE, NVL(SUM(O.TOT_REVENUE*0.15), 0) AS TOT_REVENUE
+	    FROM (SELECT TO_CHAR(ORDER_REGDATE, 'YYYYMMDD') AS ORDERDATE,
+	        SUM(DECODE(LECTURE_ON_OFF, '0', LECTURE_PRICE, 0)) AS ON_REVENUE,
+	        SUM(DECODE(LECTURE_ON_OFF, '1', LECTURE_PRICE, 0)) AS OFF_REVENUE,
+	        SUM(LECTURE_PRICE) AS TOT_REVENUE
+	        FROM ADMIN_REVENUE
+	        WHERE ORDER_REGDATE BETWEEN TO_DATE(#{startDate}, 'YYYYMMDD') AND
+	             TO_DATE(#{endDate}, 'YYYYMMDD')+1
+	        GROUP BY TO_CHAR(ORDER_REGDATE, 'YYYYMMDD')
+	        ) O		    
+	        , (SELECT TO_DATE(#{startDate},'YYYYMMDD') + LEVEL-1 AS DT
+	            FROM dual 
+	            CONNECT BY LEVEL &lt;= (TO_DATE(#{endDate},'YYYYMMDD')
+	                   - TO_DATE(#{startDate},'YYYYMMDD') + 1)
+	        ) D
+	    WHERE D.DT = O.ORDERDATE(+)
+	    GROUP BY TO_CHAR(D.DT, 'YYYY/MM/DD')
+	    ORDER BY TO_CHAR(D.DT, 'YYYY/MM/DD')
+	</select>
+	
+	
+	<select id="getRevenueThisMonth" parameterType="map" resultType="int">
+		SELECT NVL(SUM(LECTURE_PRICE), 0) FROM ADMIN_REVENUE
+		<where>
+			<choose>
+				<when test="onoff == 0">
+					LECTURE_ON_OFF = 0
+				</when>
+				<otherwise>
+					LECTURE_ON_OFF = 1
+				</otherwise>
+			</choose>
+			AND ORDER_REGDATE BETWEEN ADD_MONTHS(SYSDATE,-1) AND SYSDATE+1
+		</where>
+	</select>
+
+
+	<select id="getNewUserforThisMonth" parameterType="map" resultType="int">
+		SELECT NVL(COUNT(*), 0) FROM USERS
+		<where>
+			<choose>
+				<when test="socialType == null or socialType == ''">
+					SOCIAL_TYPE IS NULL
+				</when>
+				<when test="socialType == 'naver'">
+					SOCIAL_TYPE = 'naver'
+				</when>
+				<when test="socialType == 'google'">
+					SOCIAL_TYPE = 'google'
+				</when>
+			</choose>
+			AND USER_REGDATE BETWEEN ADD_MONTHS(SYSDATE,-1) AND SYSDATE+1
+			AND GRADE != '탈퇴' AND GRADE != '관리자'
+		</where>
+	</select>
+	
+
+	<select id="getBestTeacher" resultType="string">
+		SELECT USER_ID
+		FROM (
+		    SELECT C.USER_ID
+		    FROM (
+		        SELECT L.LECTURE_NO, CNT, L.USER_ID
+		        FROM LECTURE L, (SELECT A.LECTURE_NO, COUNT(*) AS CNT
+		                        FROM ORDER_DETAIL A, ORDERS B
+		                        WHERE A.ORDER_NO = B.ORDER_NO
+		                        AND B.ORDER_REGDATE BETWEEN ADD_MONTHS(SYSDATE,-1) AND SYSDATE+1
+		                        GROUP BY LECTURE_NO
+		                        ORDER BY LECTURE_NO DESC) D
+		        WHERE L.LECTURE_NO = D.LECTURE_NO
+		        ORDER BY CNT DESC
+		        ) C
+		    GROUP BY USER_ID
+		    ORDER BY USER_ID DESC
+		    ) T
+		WHERE ROWNUM &lt;= 5	
+	</select>
+	
+	<select id="getNewWeeklyLectures" resultType="lecture">
+		SELECT *
+		FROM (SELECT * FROM LECTURE
+		    ORDER BY LECTURE_NO DESC) L
+		WHERE ROWNUM &lt;= 5
+	</select>
+	
+	<select id="getUsers" parameterType="map" resultType="userVO">
+		SELECT * FROM USERS
+		<where>
+			GRADE != '탈퇴'		
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND (USER_NAME LIKE '%'||#{searchKeyword}||'%'
+					OR USER_ID LIKE '%'||#{searchKeyword}||'%'
+					OR GRADE LIKE '%'||#{searchKeyword}||'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="getResumeTotal" resultType="int">
+		SELECT COUNT(*) FROM RESUME WHERE RESUME_STATUS = 'false'
+	</select>
+	
+	<select id="getResumes" parameterType="map" resultType="resume">
+		SELECT T.*
+		FROM (
+		    SELECT ROWNUM AS ROW_NUM, R.*
+		    FROM (SELECT * FROM RESUME WHERE RESUME_STATUS = 'false') R) T
+		WHERE ROW_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="getCallcenterTotal" resultType="int">
+		SELECT COUNT(*) FROM CALL_CENTER WHERE QNA_ADOPT = 'FALSE'
+	</select>
+	
+	<select id="getCallcenters" parameterType="map" resultType="memberBoard">
+		SELECT T.*
+		FROM (
+		    SELECT ROWNUM AS ROW_NUM, C.*
+		    FROM (SELECT * FROM CALL_CENTER WHERE QNA_ADOPT = 'FALSE') C) T
+		WHERE ROW_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+</mapper>
+
+
+
+
+
+

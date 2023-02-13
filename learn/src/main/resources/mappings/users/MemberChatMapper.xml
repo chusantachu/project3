@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.user.impl.MemberChatDAO">
+
+<!-- 		<typeAlias alias="memberChatRoomList" type="com.spring.learn.user.MemberChatRoomListVO"/> -->
+<!-- 		<typeAlias alias="memberChatContents" type="com.spring.learn.user.MemberChatContentsVO"/> -->
+
+	<select id="getChatroomS" parameterType="memberChatRoomList" resultType="memberChatRoomList">
+		SELECT * FROM MEMBER_CHAT_ROOM_LIST
+		WHERE
+		SENDER_ID = #{senderId}
+		AND RECEIVER_ID = #{receiverId}
+	</select>
+	
+	<select id="getChatroomR" parameterType="memberChatRoomList" resultType="memberChatRoomList">
+		SELECT * FROM MEMBER_CHAT_ROOM_LIST
+		WHERE
+		SENDER_ID = #{receiverId}
+		AND RECEIVER_ID = #{senderId} 
+	</select>
+
+	
+	<insert id="addChatroom" parameterType="memberChatRoomList">
+		INSERT INTO MEMBER_CHAT_ROOM_LIST
+		(CHATROOM_NO, SENDER_ID, RECEIVER_ID, SENDER_NAME, RECEIVER_NAME)
+		VALUES
+		((SELECT NVL(MAX(CHATROOM_NO),0) + 1 FROM MEMBER_CHAT_ROOM_LIST)
+		, #{senderId}, #{receiverId}, #{senderName}, #{receiverName})
+	</insert>
+	
+	<select id="getName" resultType="string">
+		SELECT USER_NAME FROM USERS
+		WHERE USER_ID = #{userId}
+	</select>
+	
+	
+	<select id="getMemberChatContents" parameterType="memberChatRoomList" resultType="memberChatContents">
+		SELECT * FROM MEMBER_CHAT_CONTENTS
+		WHERE CHATROOM_NO = #{chatroomNo}
+		ORDER BY CHAT_REGDATE ASC
+	</select>
+	
+	
+	<insert id="addMemberChatContents" parameterType="memberChatContents">
+		INSERT INTO MEMBER_CHAT_CONTENTS
+		(CHATROOM_NO, SENDER_ID, CHAT_CONTENT)
+		VALUES
+		(#{chatroomNo}, #{senderId}, #{chatContent})
+	</insert>
+	
+	<update id="updateMemberChatList" parameterType="memberChatContents">
+		UPDATE MEMBER_CHAT_ROOM_LIST
+		SET CHAT_CONTENTS = #{chatContent},CHAT_REGDATE = SYSDATE,LAST_CHATER = #{senderId}
+		WHERE CHATROOM_NO = #{chatroomNo}
+	</update>
+	
+	<select id="getMemberChatList" parameterType="userVO" resultType="memberChatRoomList">
+		SELECT * FROM
+		(SELECT * FROM MEMBER_CHAT_ROOM_LIST
+		WHERE
+		SENDER_ID = #{userId}
+		UNION		
+		SELECT * FROM MEMBER_CHAT_ROOM_LIST
+		WHERE
+		RECEIVER_ID = #{userId})
+		ORDER BY CHAT_REGDATE DESC
+	</select>
+	
+	<select id="getLastMsg" parameterType="memberChatRoomList" resultType="memberChatContents">
+		SELECT * FROM
+		(SELECT * FROM MEMBER_CHAT_CONTENTS
+		WHERE CHATROOM_NO = #{chatroomNo}
+		ORDER BY CHAT_REGDATE DESC)
+		WHERE ROWNUM = 1		
+	</select>
+	
+	<update id="seeYourMsg" parameterType="memberChatContents">
+		UPDATE MEMBER_CHAT_CONTENTS
+		SET CHAT_STATUS = 'TRUE'
+		WHERE CHATROOM_NO = #{chatroomNo}
+		<if test="senderId != null">
+			AND SENDER_ID != #{senderId}
+		</if>
+	</update>
+	
+	
+</mapper>
+
+
+
+
+
+

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="faqDAO">
+
+	<select id="getFaqList" parameterType="faqVO" resultType="faqVO">
+		SELECT * FROM FAQ ORDER BY FAQ_NO DESC
+	</select>
+
+	<delete id="deleteFaq" parameterType="faqVO">
+		DELETE FROM FAQ WHERE FAQ_NO = #{faqNo}
+	</delete>
+	
+	<update id="updateFaq" parameterType="faqVO">
+		UPDATE FAQ 
+		SET FAQ_QUESTION = #{faqQuestion},
+			FAQ_ANSWER = #{faqAnswer}
+		WHERE FAQ_NO = #{faqNo}
+	</update>
+
+	<insert id="insertFaq" parameterType="faqVO">
+		INSERT INTO FAQ (FAQ_NO, FAQ_ANSWER, FAQ_QUESTION)
+	 	VALUES ((SELECT NVL(MAX(FAQ_NO),0) + 1 FROM FAQ), #{faqAnswer}, #{faqQuestion})
+	</insert>
+	
+	<select id="latestInfo" resultType="faqVO">
+        SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM FAQ
+	                 	ORDER BY FAQ_NO DESC
+	             ) B 
+	         )
+            WHERE R_NUM BETWEEN 1 AND 5
+	</select>
+	
+</mapper>
+
+
+
+
+
+

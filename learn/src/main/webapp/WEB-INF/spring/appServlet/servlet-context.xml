@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+
+	<context:component-scan base-package="com.spring.learn.view"/>
+	<mvc:default-servlet-handler/>	
+	<mvc:annotation-driven />
+	
+	<!-- 파일 업로드 관련 설정 (MultipartResolver 등록)
+		Resolver 명칭이 있는 객체명은 대체로 명칭이 정해져 있음
+	-->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">	
+		<property name="maxUploadSize" value="10000000"/> <!-- 최대 등록 사이즈 10메가 -->
+	</bean>
+	
+	<websocket:handlers>
+		<websocket:mapping handler="echoHandler" path="/echo" />
+		<websocket:sockjs websocket-enabled="true"/>
+	</websocket:handlers>
+    
+	<bean id="echoHandler" class="com.spring.learn.echo.EchoHandler"></bean>
+	
+	<websocket:handlers>
+		<websocket:mapping handler="handlerChat" path="/chat" />
+        <websocket:sockjs websocket-enabled="true" />
+	</websocket:handlers>
+	<bean id="handlerChat" class="com.spring.learn.echo.HandlerChat"></bean>
+	
+	<bean id="myHandler" class="com.spring.learn.echo.AlarmHandler" />
+	<websocket:handlers>
+		<websocket:mapping handler="myHandler" path="/alram" />
+		<websocket:handshake-interceptors>
+	         <bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor"/>
+	      </websocket:handshake-interceptors>
+		<websocket:sockjs websocket-enabled="true"/>
+	</websocket:handlers>
+	
+	<websocket:handlers>
+		<websocket:mapping handler="memberChatHandler" path="/memberChat" />
+        <websocket:sockjs websocket-enabled="true" />
+	</websocket:handlers>
+	<bean id="memberChatHandler" class="com.spring.learn.echo.memberChatHandler"></bean>
+</beans>

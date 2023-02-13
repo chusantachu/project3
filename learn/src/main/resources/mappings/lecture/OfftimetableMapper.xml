@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.learn.lecture.impl.OfftimetableDAO">
+
+  <select id="getOfftimetableCount" parameterType="String" resultType="int">
+    SELECT COUNT(*) FROM OFF_TIMETABLE
+    WHERE LECTURE_NO = #{lectureNo}
+  </select>
+
+  <select id="getOfftimetableList" parameterType="hashMap" resultType="offtimetable">
+    SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM (
+    SELECT COUNT(d.ORDER_DETAIL_NO) AS STUDENT_COUNT, t.*, l.LECTURE_TITLE
+    FROM OFF_TIMETABLE t
+    LEFT OUTER JOIN ORDER_DETAIL d ON t.TIMETABLE_NO = d.TIMETABLE_NO,
+    LECTURE l
+    WHERE t.LECTURE_NO = #{lectureNo}
+    AND l.LECTURE_NO = t.LECTURE_NO
+    GROUP BY t.TIMETABLE_NO, t.LECTURE_NO, LECTURE_ADDRESS, MAX_SEAT,
+    TIMETABLE_START, TIMETABLE_END, LECTURE_PAST_ADDRESS, l.LECTURE_TITLE
+    ORDER BY t.TIMETABLE_START) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+
+  <select id="getStudentList" parameterType="hashMap" resultType="userVO">
+    SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM (
+    SELECT u.USER_NAME, d.USER_ID, o.ORDER_REGDATE AS USER_REGDATE
+    FROM ORDER_DETAIL d, ORDERS o, USERS u
+    WHERE d.TIMETABLE_NO = #{timetableNo}
+    AND d.ORDER_NO = o.ORDER_NO
+    AND d.USER_ID = u.USER_ID
+    ORDER BY o.ORDER_REGDATE) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+
+  <select id="getStudentCount" parameterType="String" resultType="int">
+    SELECT COUNT(d.ORDER_DETAIL_NO) AS STUDENT_COUNT
+    FROM OFF_TIMETABLE t
+    LEFT OUTER JOIN ORDER_DETAIL d
+    ON t.TIMETABLE_NO = d.TIMETABLE_NO
+    WHERE t.TIMETABLE_NO = #{timetableNo}
+  </select>
+
+  <insert id="insertTimetable" parameterType="offtimetable">
+    INSERT INTO OFF_TIMETABLE (TIMETABLE_NO, LECTURE_NO, LECTURE_ADDRESS, MAX_SEAT,
+    TIMETABLE_START, TIMETABLE_END, LECTURE_PAST_ADDRESS) VALUES
+    ((SELECT MAX(TIMETABLE_NO) + 1 FROM OFF_TIMETABLE), #{lectureNo}, #{lectureAddress}, #{maxSeat},
+    #{timetableStart}, #{timetableEnd}, #{lecturePastAddress})
+  </insert>
+
+</mapper>

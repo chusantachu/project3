@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.lecture.impl.LectureNewsDAO">
+	
+	<!-- 페이징추가  -->
+	<select id="getLectureNewsList" parameterType="map" resultType="lectureNewsVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE_NEWS
+		                WHERE 1 = 1
+		                AND LECTURE_NO = #{lectureNo}
+		                <if test="searchKeyword != null">
+							AND (NEWS_CONTENT LIKE '%'|| #{searchKeyword} ||'%'
+								 OR NEWS_TITLE LIKE '%'|| #{searchKeyword} ||'%')
+						</if>
+	                 	ORDER BY BOARD_NO DESC
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countBoard" parameterType="lectureNewsVO" resultType="int">
+		SELECT COUNT(BOARD_NO) FROM LECTURE_NEWS
+		WHERE LECTURE_NO = #{lectureNo}
+		<if test="searchKeyword != null">
+		AND (NEWS_CONTENT LIKE '%'|| #{searchKeyword} ||'%'
+			 OR NEWS_TITLE LIKE '%'|| #{searchKeyword} ||'%')
+		</if>		
+	</select>
+	
+	<!-- 게시글 번호에 해당하는 상세데이터 -->
+	<select id="getLectureNews" parameterType="lectureNewsVO" resultType="lectureNewsVO">
+		SELECT * FROM LECTURE_NEWS
+		WHERE BOARD_NO = #{boardNo}
+	</select>
+ 
+ 	<delete id="deleteLectureNews" parameterType="lectureNewsVO">
+		DELETE FROM LECTURE_NEWS 
+		WHERE BOARD_NO = #{boardNo}
+	</delete>
+	
+	<insert id="insertLectureNews" parameterType="lectureNewsVO">
+		INSERT INTO LECTURE_NEWS (BOARD_NO, LECTURE_NO, LECTURE_WRITER, NEWS_CONTENT, BOARD_REGDATE, NEWS_TITLE)
+	 	VALUES ((SELECT NVL(MAX(BOARD_NO),0) + 1 FROM LECTURE_NEWS), #{lectureNo}, #{lectureWriter}, #{newsContent}, SYSDATE, #{newsTitle})
+	</insert>
+	
+	<select id="lastNo" resultType="int">
+		SELECT NVL(MAX(BOARD_NO),0) FROM LECTURE_NEWS
+	</select>
+	
+	<update id="updateLectureNews" parameterType="lectureNewsVO">
+		UPDATE LECTURE_NEWS
+		SET NEWS_TITLE = #{newsTitle}, 
+			NEWS_CONTENT = #{newsContent} 
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+	
+	
+</mapper>
+
+
+
+
+
+

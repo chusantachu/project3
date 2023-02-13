@@ -1,0 +1,93 @@
+<%@ page language="java" pageEncoding="UTF-8"%>
+<style>
+#sidebar-wrapper {
+	z-index: 1000;
+	left: 250px;
+	width: 0;
+	height: 100%;
+	margin-left: -250px;
+	overflow-y: auto;
+	background: white;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-o-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+	width: 250px;
+}
+
+.sidebar-brand {
+	list-style: none;
+	margin-top: 3px;
+	/* font-size: 1em; */
+	margin-right: 20px;
+}
+.sidebar-top {
+	list-style: none;
+	margin-top: 3px;
+	margin-right: 5px;
+	color: gray;
+	text-align: left;
+	background-color: white;
+	/* border: 1px solid #d3d3d3; */
+	height: 15px;
+	display: flex;
+	justify-content: left;
+	align-items: center;
+}
+
+.sidebar-nav li a:hover {
+	text-decoration: none;
+	color: white;
+	background: #4aa8d8;
+}
+
+.sidebar-nav li a {
+	display: block;
+	text-decoration: none;
+	color: black;
+	background-color: white;
+	text-align: center;
+	/* border: 1px solid #d3d3d3; */
+	margin-bottom: 2px;
+}
+</style>
+
+	<div class="row">
+
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav">
+				<li class="sidebar-top">
+					<h4 style="margin-left: 3px; text-align: center;"><small>HOME</small></h4>
+				</li>
+				<li class="sidebar-brand"><a href="${pageContext.request.contextPath}/member/goToPersonalPage.do?userId=${user.userId}">프로필</a></li>
+				<li class="sidebar-brand"><a href="#">알림</a></li>
+			</ul>
+			<ul class="sidebar-nav">
+				<li class="sidebar-top">
+					<h4 style="margin-left: 3px; text-align: center;"><small>학습 관리</small></h4>
+				</li>
+				<li class="sidebar-brand"><a href="${pageContext.request.contextPath}/memberBoard/goMyLectureList.do">내학습</a></li>
+				<li class="sidebar-brand"><a href="${pageContext.request.contextPath}/memberBoard/callCenterBoardList.do?userId=${user.userId}">작성한 게시글</a></li>
+
+				<li class="sidebar-brand"><a href="#">북마크</a></li>
+			</ul>
+			<ul class="sidebar-nav">
+				<li class="sidebar-top">
+					<h4 style="margin-left: 3px; text-align: center;"><small>수강 신청</small></h4>
+				</li>
+				<li class="sidebar-brand"><a href="#">수강 바구니</a></li>
+				<li class="sidebar-brand"><a href="#">좋아요</a></li>
+				<li class="sidebar-brand"><a href="#">포인트</a></li>
+				<li class="sidebar-brand"><a href="#">구매내역</a></li>
+			</ul>
+			<ul class="sidebar-nav">
+				<li class="sidebar-top">
+					<h4 style="margin-left: 3px; text-align: center;"><small>설정</small></h4>
+				</li>
+				<li class="sidebar-brand"><a href="${pageContext.request.contextPath}/Member/myPage.jsp">계정정보</a>
+				</li>
+				<li class="sidebar-brand"><a href="getResume.do?userId=${user.userId }">지식 공유 현황보기</a>
+				</li>
+			</ul>
+		</div>
+	</div>

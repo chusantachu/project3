@@ -1,0 +1,51 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+     dispHTML += '';
+     dispHTML += '<div class="col-4 card course course_card_item border-0 mb-5" style="height:380px;">';
+     dispHTML += '<div class="card h-100 border-0">';
+     dispHTML += '<div class="card-image h-50">';
+     dispHTML += '<img class="card-img-top" src="'+this.lectureCoverimg+'" width="100%" alt="'+this.lectureTitle+'">';
+     dispHTML += '</div>';
+     dispHTML += '<div class="card-body w-100 overflow-hidden">';
+     dispHTML += '<p class="card-title font-weight-bold " style="height:50px;">'+this.lectureTitle+'</a></p>';
+     
+     dispHTML += '<span class="card-user font-weight-bold">'+this.lectureWriter+'</span>';	
+     dispHTML += '<span>';
+     for (var i = 1; i <= Math.round(this.lectureRate); i++) {
+      dispHTML += '<i class="fa-solid fa-star" style="color: #fada5e;"></i>';					            	
+     }
+     for (var i = 1; i <= Math.round(this.lectureRate); i++) {
+      dispHTML += '<i class="fa-regular fa-star" style="color: #fada5e;"></i>';					            	
+     }
+     dispHTML += '('+this.reviewCount+')';
+     dispHTML += '</span>';   
+     dispHTML += '<p class="card-price">';
+     if (this.lecturePrice != this.salePrice) {
+      dispHTML += '<del class="text-secondary">&#8361;'+this.lecturePrice+'</del>';        	
+      dispHTML += '<span class="text-primary font-weight-bold h5">&#8361;'+Math.round(this.salePrice)+'</span>';        	
+     } else {
+      dispHTML += '<span class="font-weight-bold h5">&#8361;'+this.lecturePrice+'</span>';			            	
+     }
+     dispHTML += '</p>';
+     dispHTML += '<a href="${pageContext.request.contextPath}/Lecture/lectureDetail.jsp?lectureNo='+this.lectureNo+'" class="stretched-link"></a>';
+     dispHTML += '<span style="background-color: hsl(321,63%,90%)">+'+this.studentCount+'명</span>';
+     dispHTML += '</div>';
+     
+     dispHTML += '<div class="info">';
+     dispHTML += '<div class="w-100 h-75 overflow-hidden">';
+     dispHTML += '<p class="font-weight-bold">'+this.lectureTitle+'</p>';
+     if (this.lectureContent.length > 100){
+      dispHTML += '<p>'+this.lectureContent.substring(0, 100)+'...</p>';
+     } else {
+     	dispHTML += '<p>'+this.lectureContent+'</p>';
+     }
+    	dispHTML += '</div>';
+    	dispHTML += '<div class="position-absolute bottom-0 w-100 h-15">';
+    	dispHTML += '<p class="text-info font-weight-bold">'+this.lectureLevel+'</p>';
+    	dispHTML += '<p class="text-info font-weight-bold">'+this.categoryName+'</p>';
+    	dispHTML += '</div>';
+    	dispHTML += '</div>';
+    	dispHTML += '</div>';
+    	dispHTML += '</div>';
+  	dispHTML += '</div>';	

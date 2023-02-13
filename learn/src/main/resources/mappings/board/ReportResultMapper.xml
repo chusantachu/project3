@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.board.impl.ReportResultDAO">
+
+	<insert id="insertDelReport" parameterType="reportResultVO">
+		INSERT INTO REPORT_RESULT (RESULT_NO, RESULT_ID, RESULT_TITLE, RESULT_CONTENT, RESULT_REGDATE)
+	 	VALUES ((SELECT NVL(MAX(RESULT_NO),0) + 1 FROM REPORT_RESULT), #{resultId}, #{resultTitle}, #{resultContent}, #{resultRegdate})
+	</insert>
+	
+	<select id="getResultReport" parameterType="map" resultType="reportResultVO">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM REPORT_RESULT
+		                WHERE 1 = 1
+	                 	ORDER BY RESULT_NO
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countResultReport" parameterType="reportResultVO" resultType="int">
+		SELECT COUNT(*) FROM REPORT_RESULT
+	</select>
+	
+	<select id="getDelReportPost" parameterType="reportResultVO" resultType="reportResultVO">
+		SELECT * 
+		FROM REPORT_RESULT
+		WHERE RESULT_NO = #{resultNo}
+	</select>
+	
+</mapper>
+
+
+
+
+
+

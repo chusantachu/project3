@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.learn.board.impl.BoardReportDAO">
+
+	<select id="getFalseReport" parameterType="map" resultType="boardReport">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM BOARD_REPORT
+		                WHERE 1 = 1
+						AND REPORT_STATUS = 0
+	                 	ORDER BY REPORT_DATE
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countFalseReport" parameterType="boardReport" resultType="int">
+		SELECT COUNT(*) FROM BOARD_REPORT
+		WHERE REPORT_STATUS = 0
+	</select>
+	
+	<select id="getTrueReport" parameterType="map" resultType="boardReport">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM BOARD_REPORT
+		                WHERE 1 = 1
+						AND REPORT_STATUS = 1
+	                 	ORDER BY REPORT_DATE DESC
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<select id="countTrueReport" parameterType="boardReport" resultType="int">
+		SELECT COUNT(*) FROM BOARD_REPORT
+		WHERE REPORT_STATUS = 1
+	</select>
+	
+	<select id="getCntReport" parameterType="boardReport" resultType="int">
+		SELECT COUNT(*) FROM BOARD_REPORT
+		WHERE BOARD_TYPE = #{boardType}
+		AND BOARD_NO = #{boardNo}
+		AND REPORT_STATUS = 1
+	</select>
+	
+	<update id="updateReportStatus" parameterType="boardReport">
+			 UPDATE BOARD_REPORT
+			 SET REPORT_STATUS = 1
+			 WHERE BOARD_TYPE = #{boardType}
+			 AND BOARD_NO = #{boardNo}
+			 AND REPORTER = #{reporter}
+	</update>
+	
+	<delete id="deleteReport" parameterType="boardReport">
+			 DELETE FROM BOARD_REPORT 
+			 WHERE BOARD_TYPE = #{boardType}
+			 AND BOARD_NO = #{boardNo}
+			 AND REPORTER = #{reporter}
+	</delete>
+	
+	<select id="countReport" parameterType="boardReport" resultType="int">
+		SELECT COUNT (*) FROM BOARD_REPORT
+		WHERE BOARD_TYPE = #{boardType}
+		AND BOARD_NO =  #{boardNo}
+		AND REPORT_STATUS = 1
+	</select>
+	
+	<delete id="deleteReportAll" parameterType="boardReport">
+		DELETE FROM BOARD_REPORT 
+		WHERE BOARD_TYPE = #{boardType}
+		AND BOARD_NO = #{boardNo}
+	</delete>
+	
+</mapper>
+
+
+
+
+
+

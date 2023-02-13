@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.spring.learn.lecture.impl.LectureDAO">
+	
+	<select id="getCategories" resultType="com.spring.learn.lecture.CategoryVO">
+		SELECT * FROM CATEGORY
+		ORDER BY CATEGORY_NO
+	</select>
+	
+	<select id="getCategoryName" parameterType="string" resultType="string">
+		SELECT CATEGORY_NAME FROM CATEGORY
+		WHERE CATEGORY_NO = #{categoryNo}
+	</select>
+
+	<select id="getOnlineLectures" parameterType="map" resultType="lecture">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM LECTURE
+				        WHERE LECTURE_ON_OFF = 0
+				        AND NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+				        <if test="categoryName != null and categoryName != ''">
+				            AND CATEGORY_NAME = #{categoryName}
+				        </if>
+				        ORDER BY LECTURE_NO DESC) C) L
+		WHERE ROW_NUM BETWEEN #{beginBoard} AND #{endBoard}
+	</select>
+	
+	<select id="getOfflineLectures" parameterType="map" resultType="lecture">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM LECTURE
+				        WHERE LECTURE_ON_OFF = 1
+				        AND NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+				        AND LECTURE_NO IN (SELECT LECTURE_NO FROM OFF_TIMETABLE)
+				        <if test="categoryName != null and categoryName != ''">
+				            AND CATEGORY_NAME = #{categoryName}
+				        </if>
+				        ORDER BY LECTURE_NO DESC) C) L
+		WHERE ROW_NUM BETWEEN #{beginBoard} AND #{endBoard}
+	</select>
+	
+	<select id="getLectureTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM ( SELECT L.*
+				FROM LECTURE L, (SELECT LECTURE_NO FROM OFF_TIMETABLE 
+								<where>
+									<if test="address != null and address != ''">
+						   				LECTURE_PAST_ADDRESS LIKE #{address}||'%'
+						   			</if>
+								</where>
+								GROUP BY LECTURE_NO) O
+				<where>
+					L.LECTURE_NO = O.LECTURE_NO
+					AND NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+					<choose>
+					    <when test="onoff == 'on'">
+					    	AND LECTURE_ON_OFF = 0
+					    </when>
+					    <otherwise>
+					    	AND LECTURE_ON_OFF = 1
+					    </otherwise>
+					</choose>
+					<if test="categoryName != null and categoryName != ''">
+						AND CATEGORY_NAME = #{categoryName}
+					</if>
+			   		<if test="searchKeyword != null and searchKeyword != ''">
+			   			AND LECTURE_TITLE LIKE '%'||#{searchKeyword}||'%'
+			   		</if>
+				</where>
+			 ) T
+	</select>
+
+	<select id="getOnLectureTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM LECTURE
+		<where>
+			NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+			<choose>
+			    <when test="onoff == 'on'">
+			    	AND LECTURE_ON_OFF = 0
+			    </when>
+			    <otherwise>
+			    	AND LECTURE_ON_OFF = 1
+			    </otherwise>
+			</choose>
+			<if test="categoryName != null and categoryName != ''">
+				AND CATEGORY_NAME = #{categoryName}
+			</if>
+	   		<if test="searchKeyword != null and searchKeyword != ''">
+	   			AND LECTURE_TITLE LIKE '%'||#{searchKeyword}||'%'
+	   		</if>
+		</where>
+	</select>
+	
+	<select id="getOnLecturesFiltering" parameterType="map" resultType="lecture">
+	SELECT L.*
+	FROM	(SELECT ROWNUM AS ROW_NUM, C.*
+			FROM (SELECT * FROM LECTURE
+					<where>
+						NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+					<choose>
+						<when test="onoff == 'on'">
+							AND LECTURE_ON_OFF = 0
+						</when>
+						<otherwise>
+							AND LECTURE_ON_OFF = 1
+						</otherwise>
+					</choose>
+					<choose>
+					    <when test="categoryName != null and categoryName != ''">
+					    	AND CATEGORY_NAME = #{categoryName}
+				    		<if test="searchKeyword != null and searchKeyword != ''">
+				    			AND LECTURE_TITLE LIKE '%'||#{searchKeyword}||'%'
+				    		</if>
+					    </when>
+					    <otherwise>
+				    		<if test="searchKeyword != null and searchKeyword != ''">
+				    			AND LECTURE_TITLE LIKE '%'||#{searchKeyword}||'%'
+				    		</if>
+					    </otherwise>
+					</choose>
+					</where>
+					<trim prefix="ORDER BY">
+			            <if test="orderKeyword == 'student'">STUDENT_COUNT DESC</if>                 
+			            <if test="orderKeyword == 'new' or orderKeyword == null or orderKeyword == ''">LECTURE_NO DESC</if>                 
+			            <if test="orderKeyword == 'old'">LECTURE_NO ASC</if>                 
+					</trim>
+					) C) L
+	WHERE ROW_NUM BETWEEN #{beginBoard} AND #{endBoard}
+	</select>
+	
+
+	<select id="getLecturesFiltering" parameterType="map" resultType="lecture">
+	SELECT A.*
+	FROM  ( SELECT ROWNUM AS ROW_NUM, T.*
+			FROM (SELECT L.*
+					FROM LECTURE L, (SELECT LECTURE_NO FROM OFF_TIMETABLE
+									<if test="address != null and address != ''">
+						   				WHERE LECTURE_PAST_ADDRESS LIKE #{address}||'%'
+						   			</if>
+									GROUP BY LECTURE_NO
+									) O
+					<where>
+						L.LECTURE_NO = O.LECTURE_NO
+						AND NOT USER_ID IN (SELECT USER_ID FROM USERS WHERE GRADE = '탈퇴')
+						<choose>
+						    <when test="onoff == 'on'">
+						    	AND L.LECTURE_ON_OFF = 0
+						    </when>
+						    <otherwise>
+						    	AND L.LECTURE_ON_OFF = 1
+						    </otherwise>
+						</choose>
+						<if test="categoryName != null and categoryName != ''">
+							AND L.CATEGORY_NAME = #{categoryName}
+						</if>
+				   		<if test="searchKeyword != null and searchKeyword != ''">
+				   			AND L.LECTURE_TITLE LIKE '%'||#{searchKeyword}||'%'
+				   		</if>
+					</where>
+					<trim prefix="ORDER BY">
+			            <if test="orderKeyword == 'student'">STUDENT_COUNT DESC</if>                 
+			            <if test="orderKeyword == 'new' or orderKeyword == null or orderKeyword == ''">L.LECTURE_NO DESC</if>                 
+			            <if test="orderKeyword == 'old'">L.LECTURE_NO ASC</if>                 
+					</trim>
+				 ) T
+		) A
+	WHERE ROW_NUM BETWEEN #{beginBoard} AND #{endBoard}
+	</select>
+	
+	<select id="countStudents" parameterType="string" resultType="int">
+		SELECT NVL(COUNT(*), 0)
+		FROM ORDER_DETAIL
+		WHERE LECTURE_NO = #{lectureNo}
+	</select>
+	
+	<select id="getAvgLecture" parameterType="string" resultType="_double">
+		SELECT NVL(AVG(BOARD_RATE), 0)
+		FROM LECTURE_REVIEW
+		WHERE LECTURE_NO = #{lectureNo}
+	</select>
+	
+	<select id="countLectureReview" parameterType="string" resultType="int">
+		SELECT NVL(COUNT(*), 0)
+		FROM LECTURE_REVIEW
+		WHERE LECTURE_NO = #{lectureNo}
+	</select>
+	
+	<select id="searchLectureLocation" parameterType="map" resultType="lecture">
+		SELECT DISTINCT L.*, o.LECTURE_PAST_ADDRESS
+		FROM LECTURE L, OFF_TIMETABLE O
+		WHERE L.LECTURE_NO = O.LECTURE_NO
+		AND LECTURE_PAST_ADDRESS LIKE #{address}||'%'
+	</select>
+	
+	<select id="lectureLocationAll" resultType="com.spring.learn.lecture.LectureVO">
+		SELECT DISTINCT L.*, o.LECTURE_PAST_ADDRESS
+		FROM LECTURE L, OFF_TIMETABLE O
+		WHERE L.LECTURE_NO = O.LECTURE_NO
+	</select>
+	
+	  <select id="getLecture" parameterType="String" resultType="lecture">
+    SELECT * FROM LECTURE WHERE LECTURE_NO = #{lectureNo}
+  </select>
+	
+	  <select id="getOnlineLecturebyUserId" parameterType="String" resultType="lecture">
+    SELECT * FROM LECTURE WHERE USER_ID = #{userId} AND LECTURE_ON_OFF = 0
+  </select>
+
+  <select id="getTeacherLectureCount" parameterType="String" resultType="int">
+    SELECT COUNT(*) FROM LECTURE WHERE USER_ID = #{userId}
+  </select>
+
+  <select id="getOrderLectureCount" parameterType="String" resultType="int">
+    SELECT COUNT(l.LECTURE_NO)
+    FROM LECTURE l
+    WHERE LECTURE_NO IN (
+    SELECT LECTURE_NO
+    FROM ORDER_DETAIL)
+    AND USER_ID = #{userId}
+  </select>
+
+  <select id="getTeacherLectureList" parameterType="hashMap" resultType="lecture">
+    SELECT * FROM
+    (SELECT ROWNUM R_NUM,
+    K.* FROM (SELECT * FROM LECTURE WHERE USER_ID = #{userId} ORDER BY LECTURE_NO) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+
+  <select id="getLectureAvgRate" parameterType="String" resultType="double">
+    SELECT NVL(AVG(BOARD_RATE), 0)
+    FROM LECTURE_REVIEW
+    WHERE LECTURE_NO IN (
+    SELECT LECTURE_NO
+    FROM LECTURE
+    WHERE USER_ID = #{userId})
+  </select>
+
+  <select id="getLectureSales" parameterType="String" resultType="int">
+    SELECT SUM(l.LECTURE_PRICE)
+    FROM ORDER_DETAIL d, LECTURE l
+    WHERE d.LECTURE_NO = l.LECTURE_NO
+    AND l.USER_ID = #{userId}
+  </select>
+
+  <select id="getStudentCount" parameterType="String" resultType="int">
+    SELECT COUNT(*)
+    FROM ORDER_DETAIL
+    WHERE LECTURE_NO IN (
+    SELECT LECTURE_NO
+    FROM LECTURE
+    WHERE USER_ID = #{userId})
+  </select>
+
+  <select id="getRealtimeSales" parameterType="String" resultType="lecture">
+    SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM
+    (SELECT l.LECTURE_NO, l.LECTURE_TITLE, COUNT(d.ORDER_DETAIL_NO) * l.LECTURE_PRICE AS LECTURE_PRICE,
+    MAX(o.ORDER_REGDATE) AS LECTURE_REGDATE FROM LECTURE l
+    INNER JOIN ORDER_DETAIL d ON d.LECTURE_NO = l.LECTURE_NO
+    INNER JOIN ORDERS o on d.ORDER_NO = o.ORDER_NO
+    WHERE l.USER_ID = #{userId}
+    GROUP BY l.LECTURE_NO, l.LECTURE_PRICE, l.LECTURE_TITLE
+    ORDER BY l.LECTURE_NO) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+
+  <select id="salesByMonth" parameterType="String" resultType="lecture">
+    SELECT l.LECTURE_NO AS LECTURE_NO, l.LECTURE_TITLE, COUNT(d.ORDER_DETAIL_NO) * l.LECTURE_PRICE AS LECTURE_PRICE
+    FROM LECTURE l
+    INNER JOIN ORDER_DETAIL d
+    ON d.LECTURE_NO = l.LECTURE_NO
+    INNER JOIN ORDERS O on d.ORDER_NO = O.ORDER_NO
+    WHERE l.USER_ID = #{userId}
+    AND o.ORDER_REGDATE > add_months(sysdate, -1)
+    GROUP BY l.LECTURE_NO, l.LECTURE_PRICE, l.LECTURE_TITLE
+    ORDER BY l.LECTURE_NO
+  </select>
+
+  <select id="salesByLecture" parameterType="String" resultType="lecture">
+    SELECT l.LECTURE_NO AS LECTURE_NO, l.LECTURE_TITLE, COUNT(d.ORDER_DETAIL_NO) * l.LECTURE_PRICE AS LECTURE_PRICE
+    FROM LECTURE l
+    INNER JOIN ORDER_DETAIL d
+    ON d.LECTURE_NO = l.LECTURE_NO
+    WHERE l.USER_ID = #{userId}
+    GROUP BY l.LECTURE_NO, l.LECTURE_PRICE, l.LECTURE_TITLE
+    ORDER BY l.LECTURE_NO
+  </select>
+
+  <select id="salesByLine" parameterType="String" resultType="lecture">
+    SELECT l.LECTURE_ON_OFF AS LECTURE_NO, SUM(l.LECTURE_PRICE) AS LECTURE_PRICE
+    FROM ORDER_DETAIL d, LECTURE l
+    WHERE d.LECTURE_NO = l.LECTURE_NO
+    AND l.USER_ID = #{userId}
+    GROUP BY l.LECTURE_ON_OFF
+  </select>
+
+  <select id="getSalesByLecture" parameterType="String" resultType="lecture">
+    SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM
+    (SELECT d.ORDER_DETAIL_NO AS LECTURE_NO, d.USER_ID AS USER_ID, o.ORDER_REGDATE AS LECTURE_REGDATE,
+    u.USER_NAME AS LECTURE_WRITER, l.LECTURE_PRICE AS LECTURE_PRICE
+    FROM ORDER_DETAIL d, ORDERS o, USERS u, LECTURE l
+    WHERE d.LECTURE_NO = #{lectureNo}
+    AND o.ORDER_NO = d.ORDER_NO
+    AND d.USER_ID = u.USER_ID
+    AND d.LECTURE_NO = l.LECTURE_NO
+		ORDER BY d.ORDER_DETAIL_NO) K
+    ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+
+  <select id="getSalesLectureViewCount" parameterType="String" resultType="int">
+    SELECT COUNT(d.ORDER_DETAIL_NO)
+    FROM ORDER_DETAIL d, ORDERS o, USERS u, LECTURE l
+    WHERE d.LECTURE_NO = #{lectureNo}
+    AND o.ORDER_NO = d.ORDER_NO
+    AND d.USER_ID = u.USER_ID
+    AND d.LECTURE_NO = l.LECTURE_NO
+  </select>
+
+  <select id="getSalesSumByLecture" parameterType="String" resultType="int">
+    SELECT SUM(l.LECTURE_PRICE)
+    FROM ORDER_DETAIL d, LECTURE l
+    WHERE d.LECTURE_NO = #{lectureNo}
+    AND d.LECTURE_NO = l.LECTURE_NO
+  </select>
+
+  <insert id="addLecture" parameterType="lecture">
+    INSERT INTO LECTURE
+    (LECTURE_NO, USER_ID, CATEGORY_NAME, LECTURE_TITLE,
+    LECTURE_WRITER, LECTURE_DUE, LECTURE_LEVEL, LECTURE_CONTENT, LECTURE_SUMMARY,
+    LECTURE_SALERATE, LECTURE_SALEDUE, LECTURE_PRICE, LECTURE_SECTION, LECTURE_ON_OFF,
+		QS_WEEKDAYS, QS_START, QS_END, LECTURE_COVERIMG) VALUES
+    ((SELECT MAX(LECTURE_NO) + 1 FROM LECTURE), #{userId}, #{categoryName}, #{lectureTitle},
+    #{lectureWriter}, #{lectureDue}, #{lectureLevel}, #{lectureContent}, #{lectureSummary},
+    #{lectureSalerate}, #{lectureSaledue}, #{lecturePrice}, #{lectureSection}, #{lectureOnOff},
+		#{qsWeekdays}, #{qsStart}, #{qsEnd}, #{lectureCoverimg})
+  </insert>
+
+  <select id="getLectureNo" resultType="int">
+    SELECT MAX(LECTURE_NO) FROM LECTURE
+  </select>
+  
+  <!-- 프로필 확인용 -->
+  <select id="getLectureProfile" parameterType="userVO" resultType="lecture">
+		SELECT L.*
+		FROM (SELECT ROWNUM AS ROW_NUM, C.*
+		        FROM (SELECT * FROM LECTURE
+                        WHERE USER_ID = #{userId}
+				        ORDER BY LECTURE_NO DESC ) C) L
+		WHERE ROW_NUM BETWEEN 1 AND 3
+  </select>
+  
+  <select id="getLectureProfileAll" parameterType="userVO" resultType="lecture" >
+  		SELECT * FROM LECTURE 
+  		WHERE USER_ID = #{userId}
+  </select>
+  
+  <select id="getLectureProfilePage" parameterType="map" resultType="lecture">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE
+		                WHERE USER_ID = #{userId}
+	                 	ORDER BY LECTURE_NO DESC
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+  
+  <select id="countLectureProfilePage" parameterType="userVO" resultType="int">
+  		SELECT COUNT(*) FROM LECTURE
+		WHERE USER_ID = #{userId}
+  </select>
+  
+    <select id="getLectureProfilePage_old" parameterType="map" resultType="lecture">
+		SELECT *
+		FROM (SELECT ROWNUM R_NUM, B.*
+	        FROM (	SELECT *
+	                FROM LECTURE
+		                WHERE USER_ID = #{userId}
+	                 	ORDER BY LECTURE_NO
+	             ) B 
+	         )
+		WHERE R_NUM BETWEEN #{begin} AND #{end}
+  </select>
+  
+   <!-- ===================== -->
+
+
+	<select id="getLectureStudentList" parameterType="hashMap" resultType="userVO">
+		SELECT * FROM (SELECT ROWNUM R_NUM, K.* FROM (
+		SELECT u.USER_NAME, d.USER_ID, o.ORDER_REGDATE AS USER_REGDATE, d.LECTURE_RATE AS POINTS
+		FROM ORDER_DETAIL d, ORDERS o, USERS u
+		WHERE d.LECTURE_NO = #{lectureNo}
+		AND d.ORDER_NO = o.ORDER_NO
+		AND d.USER_ID = u.USER_ID
+		ORDER BY o.ORDER_REGDATE) K
+		) WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+
+	<select id="editLecture" parameterType="lecture">
+		UPDATE LECTURE SET
+		LECTURE_SALEDUE = #{lectureSaledue},
+		LECTURE_SUMMARY = #{lectureSummary},
+		LECTURE_COVERIMG = #{lectureCoverimg},
+		LECTURE_CONTENT = #{lectureContent},
+		LECTURE_SALERATE = #{lectureSalerate},
+		QS_WEEKDAYS = #{qsWeekdays},
+		QS_START = #{qsStart},
+		QS_END = #{qsEnd}
+		WHERE LECTURE_NO = #{lectureNo}
+	</select>
+  
+</mapper>
+
+
+
+
+
+
